@@ -179,6 +179,12 @@ class JobHandler(BaseType):
       @ Out, None
     """
     if self.runInfoDict['internalParallel']:
+      #XXX All the plugins need to be loaded to get the full path.
+      import PluginManager
+      print("before loadAllPlugins", sys.path)
+      PluginManager.loadAllPlugins()
+      print("after loadAllPlugins", sys.path)
+
       ## dashboard?
       db=self.runInfoDict['includeDashboard']
       ## Check if the list of unique nodes is present and, in case, initialize the
@@ -306,6 +312,7 @@ class JobHandler(BaseType):
       if nProcs is not None:
         command.append("--num-cpus="+str(nProcs))
       outFile = open("ray_head.ip", 'w')
+      self.raiseADebug("starting local ray server:", command)
       rayStart = utils.pickleSafeSubprocessPopen(command,shell=False,stdout=outFile, stderr=outFile, env=localEnv)
       rayStart.wait()
       outFile.close()
@@ -412,8 +419,8 @@ class JobHandler(BaseType):
           self.raiseADebug("Setting up RAY server in node: "+nodeId.strip())
           runScript = os.path.join(self.runInfoDict['FrameworkDir'],"RemoteNodeScripts","start_remote_servers.sh")
           command=" ".join([runScript,"--remote-node-address",nodeId, "--address",address,"--redis-password",redisPassword, "--num-cpus",str(ntasks)," --working-dir ",self.runInfoDict['WorkingDir']," --raven-framework-dir",self.runInfoDict["FrameworkDir"],"--remote-bash-profile",self.runInfoDict['RemoteRunCommand']])
-          self.raiseADebug("command is: "+command)
           command += " --python-path "+localEnv["PYTHONPATH"]
+          self.raiseADebug("command is: "+command)
           self.remoteServers[nodeId] = utils.pickleSafeSubprocessPopen([command],shell=True,env=localEnv)
         else:
           ppserverScript = os.path.join(self.runInfoDict['FrameworkDir'],"contrib","pp","ppserver.py")

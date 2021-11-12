@@ -80,6 +80,9 @@ def loadPluginModule(name, location):
   #Save plugin so spec.loader.exec_module(plugin) can be called later
   _delayedPlugins[name] = (spec, plugin, False)
   print(' ... successfully imported "{}" ...'.format(name))
+  #XXX This is a kludge to allow loading from <plugin>/src
+  sys.path.append(os.path.join(location,'src'))
+  print('added plugin src to path',os.path.join(location,'src'))
   return plugin
 
 def finishLoadPlugin(name):
@@ -99,6 +102,13 @@ def finishLoadPlugin(name):
     #Set loaded flag to true to prevent reloading
     _delayedPlugins[name] =  (spec, plugin, True)
   return True
+
+def loadAllPlugins():
+  """
+    Forces loading all the plugins immediately.
+  """
+  for name in _delayedPlugins:
+    finishLoadPlugin(name)
 
 def loadEntities(name, plugin):
   """
