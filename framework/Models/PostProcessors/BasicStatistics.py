@@ -28,13 +28,15 @@ import xarray as xr
 
 #Internal Modules---------------------------------------------------------------
 from .PostProcessorInterface import PostProcessorInterface
+from .PostProcessorReadyInterface import PostProcessorReadyInterface
 from utils import utils
 from utils import InputData, InputTypes
 from utils import mathUtils
 import Files
+import DataObjects
 #Internal Modules End-----------------------------------------------------------
 
-class BasicStatistics(PostProcessorInterface):
+class BasicStatistics(PostProcessorReadyInterface):
   """
     BasicStatistics filter class. It computes all the most popular statistics
   """
@@ -134,7 +136,7 @@ class BasicStatistics(PostProcessorInterface):
     self.pivotParameter = None # time-dependent statistics pivot parameter
     self.pivotValue = None # time-dependent statistics pivot parameter values
     self.dynamic        = False # is it time-dependent?
-    self.sampleTag      = None  # Tag used to track samples
+    self.sampleTag      = None #'RAVEN_sample_ID'  # Tag used to track samples
     self.pbPresent      = False # True if the ProbabilityWeight is available
     self.realizationWeight = None # The joint probabilities
     self.steMetaIndex   = 'targets' # when Dataset is requested as output, the default index of ste metadata is ['targets', self.pivotParameter]
@@ -142,6 +144,14 @@ class BasicStatistics(PostProcessorInterface):
     self.sampleSize     = None # number of sample size
     self.calculations   = {}
     self.validDataType  = ['PointSet', 'HistorySet', 'DataSet'] # The list of accepted types of DataObject
+    self.dataType = ['static', 'dynamic']
+    self.acceptableMetrics = []
+    self.features = None
+    self.targets = None
+    ## dataset options
+    self.setInputDataType('xrDataset')
+    self.keepInputMeta(False)
+    self._syncNeeded = True
 
   def inputToInternal(self, currentInp):
     """
@@ -155,53 +165,74 @@ class BasicStatistics(PostProcessorInterface):
     currentInput = currentInp [-1] if type(currentInp) == list else currentInp
     if len(currentInput) == 0:
       self.raiseAnError(IOError, "In post-processor " +self.name+" the input "+currentInput.name+" is empty.")
-
     pbWeights = None
-    if type(currentInput).__name__ == 'tuple':
-      return currentInput
+    dataSet = currentInput['Data'][0][-1]
+    dataSet['sampleTag'] = self.sampleTag
+    # if type(currentInput).__name__ == 'tuple':
+    #   return currentInput
     # TODO: convert dict to dataset, I think this will be removed when DataSet is used by other entities that
     # are currently using this Basic Statisitics PostProcessor.
-    if type(currentInput).__name__ == 'dict':
-      if 'targets' not in currentInput.keys():
-        self.raiseAnError(IOError, 'Did not find targets in the input dictionary')
-      inputDataset = xr.Dataset()
-      for var, val in currentInput['targets'].items():
-        inputDataset[var] = val
-      if 'metadata' in currentInput.keys():
-        metadata = currentInput['metadata']
-        self.pbPresent = True if 'ProbabilityWeight' in metadata else False
-        if self.pbPresent:
-          pbWeights = xr.Dataset()
-          self.realizationWeight = xr.Dataset()
-          self.realizationWeight['ProbabilityWeight'] = metadata['ProbabilityWeight']/metadata['ProbabilityWeight'].sum()
-          for target in self.parameters['targets']:
-            pbName = 'ProbabilityWeight-' + target
-            if pbName in metadata:
-              pbWeights[target] = metadata[pbName]/metadata[pbName].sum()
-            elif self.pbPresent:
-              pbWeights[target] = self.realizationWeight['ProbabilityWeight']
-        else:
-          self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
-      else:
-        self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
-      if 'RAVEN_sample_ID' not in inputDataset.sizes.keys():
-        self.raiseAWarning('BasicStatisitics postprocessor did not detect RAVEN_sample_ID! Assuming the first dimension of given data...')
-        self.sampleTag = utils.first(inputDataset.sizes.keys())
-      return inputDataset, pbWeights
+    # if type(currentInput).__name__ == 'dict':
+    #   if 'targets' not in self.parameters: #currentInput.keys():
+    #     self.raiseAnError(IOError, 'Did not find targets in the input dictionary')
+    #   inputDataset = xr.Dataset()
+    #   for var in self.parameters['targets']:
+    #     inputDataset[var] = currentInput['Data'][0][-1][var]
+    #   self.pbPresent = True if 'ProbabilityWeight' in currentInput['Data'][0][-1] else False
+    #   if self.pbPresent:
+    #     pbWeights = xr.Dataset()
+    #     self.realizationWeight = xr.Dataset()
+    #     self.realizationWeight['ProbabilityWeight'] = currentInput['Data'][0][-1]['ProbabilityWeight']/currentInput['Data'][0][-1]['ProbabilityWeight'].sum()
+    #     for target in self.parameters['targets']:
+    #       pbName = 'ProbabilityWeight-' + target
+    #       if pbName in currentInput['Data'][0][-1]:
+    #         pbWeights[target] = currentInput['Data'][0][-1][pbName]/currentInput['Data'][0][-1][pbName].sum()
+    #       elif self.pbPresent:
+    #         pbWeights[target] = self.realizationWeight['ProbabilityWeight']
+    #   else:
+    #     self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
+    # else:
+    #   self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
+    # if 'RAVEN_sample_ID' not in inputDataset.sizes.keys():
+    #   self.raiseAWarning('BasicStatisitics postprocessor did not detect RAVEN_sample_ID! Assuming the first dimension of given data...')
+    #   self.sampleTag = utils.first(inputDataset.sizes.keys())
+    # return inputDataset, pbWeights
 
-    if currentInput.type not in ['PointSet','HistorySet']:
-      self.raiseAnError(IOError, self, 'BasicStatistics postprocessor accepts PointSet and HistorySet only! Got ' + currentInput.type)
+      # if 'metadata' in currentInput.keys():
+      #   metadata = currentInput['metadata']
+      #   self.pbPresent = True if 'ProbabilityWeight' in metadata else False
+      #   if self.pbPresent:
+      #     pbWeights = xr.Dataset()
+      #     self.realizationWeight = xr.Dataset()
+      #     self.realizationWeight['ProbabilityWeight'] = metadata['ProbabilityWeight']/metadata['ProbabilityWeight'].sum()
+      #     for target in self.parameters['targets']:
+      #       pbName = 'ProbabilityWeight-' + target
+      #       if pbName in metadata:
+      #         pbWeights[target] = metadata[pbName]/metadata[pbName].sum()
+      #       elif self.pbPresent:
+      #         pbWeights[target] = self.realizationWeight['ProbabilityWeight']
+      #   else:
+      #     self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
+      # else:
+      #   self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
+      # if 'RAVEN_sample_ID' not in inputDataset.sizes.keys():
+      #   self.raiseAWarning('BasicStatisitics postprocessor did not detect RAVEN_sample_ID! Assuming the first dimension of given data...')
+      #   self.sampleTag = utils.first(inputDataset.sizes.keys())
+      # return inputDataset, pbWeights
+
+    # if currentInput.type not in ['PointSet','HistorySet']:
+    #   self.raiseAnError(IOError, self, 'BasicStatistics postprocessor accepts PointSet and HistorySet only! Got ' + currentInput.type)
 
     # extract all required data from input DataObjects, an input dataset is constructed
-    dataSet = currentInput.asDataset()
+    # dataSet = currentInput.asDataset()
+    dataSet = currentInput['Data'][0][-1]
+    dataSet['sampleTag'] = self.sampleTag
     try:
       inputDataset = dataSet[self.parameters['targets']]
     except KeyError:
       missing = [var for var in self.parameters['targets'] if var not in dataSet]
-      self.raiseAnError(KeyError, "Variables: '{}' missing from dataset '{}'!".format(", ".join(missing),currentInput.name))
-    self.sampleTag = currentInput.sampleTag
-
-    if currentInput.type == 'HistorySet':
+      self.raiseAnError(KeyError, "Variables: '{}' missing from dataset '{}'!".format(", ".join(missing),dataSet.name))
+    if self.pivotParameter in dataSet.dims:
       dims = inputDataset.sizes.keys()
       if self.pivotParameter is None:
         if len(dims) > 1:
@@ -212,28 +243,59 @@ class BasicStatistics(PostProcessorInterface):
                 requested variables', ','.join(self.parameters['targets']))
       else:
         self.dynamic = True
-        if not currentInput.checkIndexAlignment(indexesToCheck=self.pivotParameter):
-          self.raiseAnError(IOError, "The data provided by the data objects", currentInput.name, "is not synchronized!")
         self.pivotValue = inputDataset[self.pivotParameter].values
         if self.pivotValue.size != len(inputDataset.groupby(self.pivotParameter)):
           msg = "Duplicated values were identified in pivot parameter, please use the 'HistorySetSync'" + \
-          " PostProcessor to syncronize your data before running 'BasicStatistics' PostProcessor."
+          " PostProcessor to synchronize your data before running 'BasicStatistics' PostProcessor."
           self.raiseAnError(IOError, msg)
-    # extract all required meta data
-    metaVars = currentInput.getVars('meta')
-    self.pbPresent = True if 'ProbabilityWeight' in metaVars else False
+    # extract all required ProbabilityWeight
+    self.pbPresent = True if 'ProbabilityWeight' in dataSet.keys() else False
     if self.pbPresent:
       pbWeights = xr.Dataset()
       self.realizationWeight = dataSet[['ProbabilityWeight']]/dataSet[['ProbabilityWeight']].sum()
       for target in self.parameters['targets']:
         pbName = 'ProbabilityWeight-' + target
-        if pbName in metaVars:
+        if pbName in dataSet.keys():
           pbWeights[target] = dataSet[pbName]/dataSet[pbName].sum()
         elif self.pbPresent:
           pbWeights[target] = self.realizationWeight['ProbabilityWeight']
     else:
       self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
+    # self.sampleTag = dataSet.sampleTag
 
+    # if currentInput.type == 'HistorySet':
+    #   dims = inputDataset.sizes.keys()
+    #   if self.pivotParameter is None:
+    #     if len(dims) > 1:
+    #       self.raiseAnError(IOError, self, 'Time-dependent statistics is requested (HistorySet) but no pivotParameter \
+    #             got inputted!')
+    #   elif self.pivotParameter not in dims:
+    #     self.raiseAnError(IOError, self, 'Pivot parameter', self.pivotParameter, 'is not the associated index for \
+    #             requested variables', ','.join(self.parameters['targets']))
+    #   else:
+    #     self.dynamic = True
+    #     if not dataSet.checkIndexAlignment(indexesToCheck=self.pivotParameter):
+    #       self.raiseAnError(IOError, "The data provided by the data objects", dataSet.name, "is not synchronized!")
+    #     self.pivotValue = inputDataset[self.pivotParameter].values
+    #     if self.pivotValue.size != len(inputDataset.groupby(self.pivotParameter)):
+    #       msg = "Duplicated values were identified in pivot parameter, please use the 'HistorySetSync'" + \
+    #       " PostProcessor to syncronize your data before running 'BasicStatistics' PostProcessor."
+    #       self.raiseAnError(IOError, msg)
+    # extract all required meta data
+    # metaVars= dataSet.getVars('meta')
+    # extract all required ProbabilityWeight
+    self.pbPresent = True if 'ProbabilityWeight' in dataSet.keys() else False
+    if self.pbPresent:
+      pbWeights = xr.Dataset()
+      self.realizationWeight = dataSet[['ProbabilityWeight']]/dataSet[['ProbabilityWeight']].sum()
+      for target in self.parameters['targets']:
+        pbName = 'ProbabilityWeight-' + target
+        if pbName in dataSet.keys():
+          pbWeights[target] = dataSet[pbName]/dataSet[pbName].sum()
+        elif self.pbPresent:
+          pbWeights[target] = self.realizationWeight['ProbabilityWeight']
+    else:
+      self.raiseAWarning('BasicStatistics postprocessor did not detect ProbabilityWeights! Assuming unit weights instead...')
     return inputDataset, pbWeights
 
   def initialize(self, runInfo, inputs, initDict):
@@ -259,7 +321,7 @@ class BasicStatistics(PostProcessorInterface):
     #for backward compatibility, compile the full list of parameters used in Basic Statistics calculations
     self.parameters['targets'] = list(self.allUsedParams)
     super().initialize(runInfo, inputs, initDict)
-    inputObj = inputs[-1] if type(inputs) == list else inputs
+    inputObj = inputs[-1] if type(inputs) == list else inputs ## What does this do?  What if inputs had more than one input
     if inputObj.type == 'HistorySet':
       self.dynamic = True
     inputMetaKeys = []
@@ -289,6 +351,44 @@ class BasicStatistics(PostProcessorInterface):
         metaParams.update(params)
     metaKeys = inputMetaKeys + outputMetaKeys
     self.addMetaKeys(metaKeys,metaParams)
+
+  # def initialize(self, runInfo, inputs, initDict):
+  #   """
+  #     Method to initialize the Basic Statistics pp.
+  #     @ In, runInfo, dict, dictionary of run info (e.g. working dir, etc)
+  #     @ In, inputs, list, list of inputs
+  #     @ In, initDict, dict, dictionary with initialization options
+  #     @ Out, None
+  #   """
+  #   super().initialize(runInfo, inputs, initDict)
+  #   if len(inputs) > 1:
+  #     # if inputs > 1, check if the | is present to understand where to get the features and target
+  #     notStandard = [k for k in self.features + self.targets if "|" not in k]
+  #     if notStandard:
+  #       self.raiseAnError(IOError, "# Input Datasets/DataObjects > 1! features and targets must use the syntax DataObjectName|feature to be usable! Not standard features are: {}!".format(",".join(notStandard)))
+  #   # now lets check that the variables are in the dataobjects
+  #   if isinstance(inputs[0], DataObjects.DataSet):
+  #     do = [inp.name for inp in inputs]
+  #     if len(inputs) > 1:
+  #       allFound = [feat.split("|")[0].strip() in do for feat in self.features]
+  #       allFound += [targ.split("|")[0].strip() in do for targ in self.targets]
+  #       if not all(allFound):
+  #         self.raiseAnError(IOError, "Targets and Features are linked to DataObjects that have not been listed as inputs in the Step. Please check input!")
+  #     # check variables
+  #     for indx, dobj in enumerate(do):
+  #       variables = [var.split("|")[-1].strip() for var in (self.features + self.targets) if dobj in var]
+  #       if not utils.isASubset(variables,inputs[indx].getVars()):
+  #         self.raiseAnError(IOError, "The variables '{}' not found in input DataObjet '{}'!".format(",".join(list(set(list(inputs[indx].getVars())) - set(variables))), dobj))
+
+  #   if self.acceptableMetrics:
+  #     acceptable = [True if metric.estimator.isInstanceString(self.acceptableMetrics) else False for metric in self.metrics]
+  #     if not all(acceptable):
+  #       notAcceptable = [self.metrics[i].estimator.interfaceKind for i, x in enumerate(acceptable) if not x]
+  #       self.raiseAnError(IOError,
+  #           "The metrics '{}' are not acceptable for validation algorithm: '{}'".format(', '.join(notAcceptable), self.name))
+
+  # Each individual validation pp should implement their own run method.
+  # def run(self, input):
 
   def _handleInput(self, paramInput):
     """
@@ -681,7 +781,8 @@ class BasicStatistics(PostProcessorInterface):
     #
     # samples
     #
-    self.sampleSize = inputDataset.sizes[self.sampleTag]
+    self.sampleTag = list(inputDataset.dims.mapping.mapping.keys())[0]
+    self.sampleSize = inputDataset.sizes[self.sampleTag]#'RAVEN_sample_ID'self.sampleTag
     metric = 'samples'
     if len(needed[metric]['targets']) > 0:
       self.raiseADebug('Starting "'+metric+'"...')
@@ -1007,7 +1108,7 @@ class BasicStatistics(PostProcessorInterface):
         da.coords[self.pivotParameter] = pivotVals
       else:
         # construct target and feature matrices
-        dataSet = dataSet.to_array().transpose(self.sampleTag,'variable')
+        dataSet = dataSet.to_array().transpose()#self.sampleTag,'variable'
         featSet = dataSet.sel(**{'variable':features}).values
         targSet = dataSet.sel(**{'variable':targets}).values
         da = self.sensitivityCalculation(features,targets,featSet,targSet,intersectionSet)
@@ -1381,15 +1482,20 @@ class BasicStatistics(PostProcessorInterface):
       @ In,  inputIn, object, object contained the data to process. (inputToInternal output)
       @ Out, outputSet, xarray.Dataset or dictionary, dataset or dictionary containing the results
     """
-    inputData = self.inputToInternal(inputIn)
-    outputSet = self.__runLocal(inputData)
+    # inputData = self.inputToInternal(inputIn)
+    try:
+      pbW = inputIn['Data'][0][-1][['ProbabilityWeight-'+var for var in inputIn['Data'][0][0]]]
+    except:
+      pbW = inputIn['Data'][0][-1][['ProbabilityWeight']]
+    data = inputIn['Data'][0][-1][[var for var in inputIn['Data'][0][0]+inputIn['Data'][0][1]]]
+    outputSet = self.__runLocal((data,pbW))
     return outputSet
 
-  def collectOutput(self, finishedJob, output):
-    """
-      Function to place all of the computed data into the output object
-      @ In, finishedJob, JobHandler External or Internal instance, A JobHandler object that is in charge of running this post-processor
-      @ In, output, dataObjects, The object where we want to place our computed results
-      @ Out, None
-    """
-    super().collectOutput(finishedJob, output)
+  # def collectOutput(self, finishedJob, output):
+  #   """
+  #     Function to place all of the computed data into the output object
+  #     @ In, finishedJob, JobHandler External or Internal instance, A JobHandler object that is in charge of running this post-processor
+  #     @ In, output, dataObjects, The object where we want to place our computed results
+  #     @ Out, None
+  #   """
+  #   super().collectOutput(finishedJob, output)
