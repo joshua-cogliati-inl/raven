@@ -62,6 +62,7 @@ build/
 .failed_tests
 .ravenrc
 *.ravenStatus
+install/
 
 # eclipse
 .project
