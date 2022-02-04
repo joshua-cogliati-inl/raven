@@ -29,7 +29,7 @@ from Decorators.Parallelization import Parallel
 #Internal Modules------------------------------------------------------------------------------------
 from Models import Dummy
 import Models
-import Files
+from framework import Files
 from utils import InputData, InputTypes
 #Internal Modules End--------------------------------------------------------------------------------
 

@@ -26,7 +26,7 @@ import copy
 #Internal Modules------------------------------------------------------------------------------------
 from .PostProcessorInterface import PostProcessorInterface
 from utils import InputData, InputTypes
-import Files
+from framework import Files
 #Internal Modules End--------------------------------------------------------------------------------
 
 class ImportanceRank(PostProcessorInterface):

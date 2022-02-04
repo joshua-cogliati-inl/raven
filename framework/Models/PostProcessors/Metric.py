@@ -27,7 +27,7 @@ import copy
 #Internal Modules------------------------------------------------------------------------------------
 from utils import xmlUtils
 from utils import InputData, InputTypes
-import Files
+from framework import Files
 import Distributions
 import MetricDistributor
 from .PostProcessorInterface import PostProcessorInterface

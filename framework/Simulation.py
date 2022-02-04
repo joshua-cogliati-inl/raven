@@ -27,7 +27,7 @@ import MessageHandler # this needs to happen early to instantiate message handle
 from BaseClasses import MessageUser
 import Steps
 import DataObjects
-import Files
+from framework import Files
 import Samplers
 import Optimizers
 import Models

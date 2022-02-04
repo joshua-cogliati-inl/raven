@@ -37,7 +37,7 @@ from utils import utils
 from utils import InputData, InputTypes
 from Decorators.Parallelization import Parallel
 import CsvLoader #note: "from CsvLoader import CsvLoader" currently breaks internalParallel with Files and genericCodeInterface - talbpaul 2017-08-24
-import Files
+from framework import Files
 from DataObjects import Data
 #Internal Modules End--------------------------------------------------------------------------------
 

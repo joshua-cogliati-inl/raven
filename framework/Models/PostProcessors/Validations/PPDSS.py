@@ -31,7 +31,7 @@ import copy
 from utils import utils
 from utils import InputData, InputTypes
 from utils import xmlUtils
-import Files
+from framework import Files
 import DataObjects
 from ..ValidationBase import ValidationBase
 #Internal Modules End--------------------------------------------------------------------------------

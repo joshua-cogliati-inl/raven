@@ -25,7 +25,7 @@ import numpy as np
 
 #Internal Modules------------------------------------------------------------------------------------
 from .HybridModelBase import HybridModelBase
-import Files
+from framework import Files
 from utils import InputData, InputTypes
 from utils import utils
 from Runners import Error as rerror

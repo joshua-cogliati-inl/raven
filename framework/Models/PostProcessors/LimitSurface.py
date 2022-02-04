@@ -27,7 +27,7 @@ from .PostProcessorInterface import PostProcessorInterface
 from utils import InputData, InputTypes, utils, mathUtils
 from SupervisedLearning import factory as romFactory
 import GridEntities
-import Files
+from framework import Files
 #Internal Modules End--------------------------------------------------------------------------------
 
 class LimitSurface(PostProcessorInterface):
