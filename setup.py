@@ -50,6 +50,11 @@ setup(name='raven_framework',
       version='0.0',
       description='RAVEN c++ dependenciences including A library for computing the Approximate Morse-Smale Complex (AMSC)',
       package_dir={'AMSC': 'src/contrib/AMSC', 'crow_modules': 'src/crow_modules', '': 'framework'},
+      entry_points={
+          'console_scripts': [
+              'raven_framework = Driver:main'
+          ]
+      },
       ext_modules=[
           Extension('crow_modules._distribution1D',
                   ['src/crow_modules/distribution1D.i',

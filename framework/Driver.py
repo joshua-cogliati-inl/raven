@@ -147,8 +147,12 @@ def checkVersions():
   # -> this is slow, so maybe not.
 
 
-if __name__ == '__main__':
-  """This is the main driver for the RAVEN framework"""
+def main():
+  """
+    This is the main driver for the RAVEN framework
+    @ In, None
+    @ Out, None
+  """
   # Retrieve the framework directory path and working dir
 
   printLogo()
@@ -310,3 +314,6 @@ if __name__ == '__main__':
       print ('\n\n! Exit called, exiting RAVEN.\n\n')
   else:
     raven()
+
+if __name__ == '__main__':
+  main()
