@@ -52,12 +52,12 @@ for A in "$@"; do
     esac
 done
 echo 'Loading libraries ...'
-if [[ ! $SKIP_CONDA == 0 ]]; then
-    source $SCRIPT_DIR/scripts/establish_conda_env.sh --load
-else
-    source $SCRIPT_DIR/scripts/establish_conda_env.sh --load --installation-manager PIP
+#if [[ ! $SKIP_CONDA == 0 ]]; then
+    #    source $SCRIPT_DIR/scripts/establish_conda_env.sh --load
+#else
+    # source $SCRIPT_DIR/scripts/establish_conda_env.sh --load --installation-manager PIP
     #PYTHON_COMMAND=${PYTHON_COMMAND:=python}
-fi
+#fi
 
 # pick tests to run
 ## test set 0 is normal raven tests
@@ -99,6 +99,7 @@ ALL_PASS=0
 PASSED=()
 FAILED=()
 
+export PYTHON_COMMAND=python3
 if [[ $DO_RAVEN == 0 ]]; then
   echo
   echo "********************************************************************************"
