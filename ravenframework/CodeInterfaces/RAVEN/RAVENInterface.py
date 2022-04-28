@@ -17,12 +17,14 @@ Created on Sept 10, 2017
 @author: alfoa
 """
 import os
+import time
 import numpy as np
 from sys import platform
 from ravenframework.utils import utils
 from ravenframework.CodeInterfaceBaseClass import CodeInterfaceBase
 from ravenframework import DataObjects
 from ravenframework import Databases
+from ravenframework import MessageHandler
 
 class RAVEN(CodeInterfaceBase):
   """
@@ -309,7 +311,13 @@ class RAVEN(CodeInterfaceBase):
     ## NOTE this can be falsely accepted if the run dir isn't cleared before running,
     ##      which it automatically is but can be disabled
     toCheck = os.path.join(workingDir, self.innerWorkingDir, '.ravenStatus')
+    for i in range(5):
+      if os.path.isfile(toCheck):
+        break
+      #possibly not written to disk yet
+      time.sleep(1.0)
     if not os.path.isfile(toCheck):
+      MessageHandler._write_data(f'RAVENInterface WARNING: Could not find {toCheck}, assuming failed RAVEN run.')
       print(f'RAVENInterface WARNING: Could not find {toCheck}, assuming failed RAVEN run.')
       return True
     # check for output CSV (and data)
@@ -320,12 +328,14 @@ class RAVEN(CodeInterfaceBase):
           try:
             fileObj = open(outStreamFile,"r")
           except IOError:
+            MessageHandler._write_data(self.printTag+' ERROR: The RAVEN INNER output file "'+str(outStreamFile)+'" does not exist!')
             print(self.printTag+' ERROR: The RAVEN INNER output file "'+str(outStreamFile)+'" does not exist!')
             failure = True
           if not failure:
             readLines = fileObj.readlines()
             if any("nan" in x.lower() for x in readLines):
               failure = True
+              MessageHandler._write_data(self.printTag+' ERROR: Found nan in RAVEN INNER output "'+str(outStreamFile)+'!')
               print(self.printTag+' ERROR: Found nan in RAVEN INNER output "'+str(outStreamFile)+'!')
               break
             del readLines
@@ -334,6 +344,7 @@ class RAVEN(CodeInterfaceBase):
         path = self.outDatabases[dbName]
         fullPath = os.path.join(workingDir, self.innerWorkingDir, path)
         if not os.path.isfile(fullPath):
+          MessageHandler._write_data(f'{self.printTag} ERROR: The RAVEN INNER output file "{os.path.abspath(fullPath)}" was not found!')
           print(f'{self.printTag} ERROR: The RAVEN INNER output file "{os.path.abspath(fullPath)}" was not found!')
           failure = True
     return failure
