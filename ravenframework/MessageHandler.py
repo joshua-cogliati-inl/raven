@@ -25,6 +25,40 @@ from .utils import utils
 
 _starttime = time.time()
 
+#If this is changed to a directory, write a mirror of
+# the output log to it. The name of the file in the
+# directory is out_{nodename}_{pid}.txt
+_rootWriteDir = ''
+
+def _write_data(data):
+  """
+    If _rootWriteDir is not empty write a mirror of the logging data to it
+    @ In, data, string, string to write
+    @ Out, None
+  """
+  import os
+  filename = os.path.join(_rootWriteDir, "out_{}_{}.txt".format(os.uname().nodename, os.getpid()))
+  f = open(filename, "a")
+  f.write(data)
+  f.write("\n")
+  f.close()
+
+def _write_stack():
+  """
+    If _rootWriteDir is not empty write a stacktrace of the current
+    point to it.
+    @ In, None
+    @ Out, None
+  """
+  import os
+  import traceback
+  filename = os.path.join(_rootWriteDir, "out_{}_{}.txt".format(os.uname().nodename, os.getpid()))
+  f = open(filename, "a")
+  traceback.print_stack(file=f)
+  f.write("\n")
+  f.close()
+
+
 #custom exceptions
 class NoMoreSamplesNeeded(GeneratorExit):
   """
@@ -250,6 +284,8 @@ class MessageHandler(object):
       self.addWarning(message)
     if okay:
       print(msg,file=writeTo)
+      if len(_rootWriteDir) > 0:
+        _write_data(msg)
     sys.stdout.flush()
 
   def addWarning(self, msg):
