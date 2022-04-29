@@ -153,7 +153,7 @@ def main(checkLibraries):
       interaction (Qt requires UI to be handled on the main thread of execution)
     """
     simulation.initialize()
-    simulation.run()
+    runReturn = simulation.run()
 
     ## If there is an associated UI application, then we can quit it now that
     ## we are done, the main thread does not know when this done presumably
@@ -162,6 +162,7 @@ def main(checkLibraries):
     ## this after the while loop below.
     if simulation.app is not None:
       simulation.app.quit()
+    return runReturn
 
   if simulation.app is not None:
     try:
@@ -200,7 +201,7 @@ def main(checkLibraries):
         traceback.print_stack(sys._current_frames()[ravenThread.ident])
       print ('\n\n! Exit called, exiting RAVEN.\n\n')
   else:
-    raven()
+    sys.exit(raven())
 
 if __name__ == '__main__':
   main(True)
