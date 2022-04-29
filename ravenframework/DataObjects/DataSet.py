@@ -35,6 +35,7 @@ except ValueError:
 
 from .. import CsvLoader
 from ..utils import utils, cached_ndarray, xmlUtils, mathUtils
+from .. import MessageHandler
 
 #
 #
@@ -1867,8 +1868,11 @@ class DataSet(DataObject):
     missing = needed - provided
     if len(missing) > 0:
       extra = provided - needed
-      self.raiseAnError(IOError, f'Not all variables requested for data object "{self.name}" were found in csv "{fileName}.csv"!' +
+      MessageHandler._write_stack()
+      self.raiseAWarning(f'Not all variables requested for data object "{self.name}" were found in csv "{fileName}.csv"!' +
                         f'\nNeeded: {needed}; \nUnused: {extra}; \nMissing: {missing}')
+      #self.raiseAnError(IOError, f'Not all variables requested for data object "{self.name}" were found in csv "{fileName}.csv"!' +
+      #                  f'\nNeeded: {needed}; \nUnused: {extra}; \nMissing: {missing}')
     # otherwise, return happily and continue loading the CSV
     return dims
 
