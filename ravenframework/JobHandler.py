@@ -301,10 +301,12 @@ class JobHandler(BaseType):
     # get local enviroment
     localEnv = os.environ.copy()
     localEnv["PYTHONPATH"] = os.pathsep.join(sys.path)
+    localEnv["RAY_LOG_TO_STDERR"] = "1"
     if _rayAvail:
       command = ["ray","start","--head"]
       if nProcs is not None:
         command.append("--num-cpus="+str(nProcs))
+      command.append("--temp-dir=/scratch/cogljj/ray")
       outFile = open("ray_head.ip", 'w')
       rayStart = utils.pickleSafeSubprocessPopen(command,shell=False,stdout=outFile, stderr=outFile, env=localEnv)
       rayStart.wait()
