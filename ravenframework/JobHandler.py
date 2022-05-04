@@ -301,7 +301,6 @@ class JobHandler(BaseType):
     # get local enviroment
     localEnv = os.environ.copy()
     localEnv["PYTHONPATH"] = os.pathsep.join(sys.path)
-    localEnv["RAY_LOG_TO_STDERR"] = "1"
     if _rayAvail:
       command = ["ray","start","--head"]
       if nProcs is not None:

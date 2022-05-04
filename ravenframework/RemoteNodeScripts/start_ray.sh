@@ -40,5 +40,4 @@ hostname >> $OUTFILE
 
 echo loaded >> $OUTFILE
 command -v ray >> $OUTFILE 2>&1
-export RAY_LOG_TO_STDERR=1
 ray start --temp-dir=/scratch/cogljj/ray --address=$HEAD_ADDRESS --redis-password=$REDIS_PASS --num-cpus $NUM_CPUS >> $OUTFILE 2>&1
