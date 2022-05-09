@@ -416,6 +416,8 @@ class JobHandler(BaseType):
           self.raiseADebug("command is: "+command)
           command += " --python-path "+localEnv["PYTHONPATH"]
           self.remoteServers[nodeId] = utils.pickleSafeSubprocessPopen([command],shell=True,env=localEnv)
+          self.remoteServers[nodeId].wait()
+          self.raiseADebug("server result: "+str(self.remoteServers[nodeId]))
         else:
           ppserverScript = os.path.join(self.runInfoDict['FrameworkDir'],"contrib","pp","ppserver.py")
           command=" ".join([pythonCommand,ppserverScript,"-w",str(ntasks),"-i",remoteHostName,"-p",str(randint(1024,65535)),"-t","50000","-g",localEnv["PYTHONPATH"],"-d"])
