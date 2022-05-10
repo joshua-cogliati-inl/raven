@@ -37,7 +37,9 @@ fi
 
 which ray >> $OUTFILE 2>&1
 hostname >> $OUTFILE
+HOSTNAME=`hostname`
+mkdir -p /scratch/cogljj/ray/$HOSTNAME
 
 echo loaded >> $OUTFILE
 command -v ray >> $OUTFILE 2>&1
-ray start --temp-dir=/scratch/cogljj/ray --address=$HEAD_ADDRESS --redis-password=$REDIS_PASS --num-cpus $NUM_CPUS >> $OUTFILE 2>&1
+ray start --temp-dir=/scratch/cogljj/ray/$HOSTNAME --verbose --address=$HEAD_ADDRESS --redis-password=$REDIS_PASS --num-cpus $NUM_CPUS >> $OUTFILE 2>&1

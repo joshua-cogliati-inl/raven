@@ -306,6 +306,7 @@ class JobHandler(BaseType):
       if nProcs is not None:
         command.append("--num-cpus="+str(nProcs))
       command.append("--temp-dir=/scratch/cogljj/ray")
+      command.append("--verbose")
       outFile = open("ray_head.ip", 'w')
       rayStart = utils.pickleSafeSubprocessPopen(command,shell=False,stdout=outFile, stderr=outFile, env=localEnv)
       rayStart.wait()
