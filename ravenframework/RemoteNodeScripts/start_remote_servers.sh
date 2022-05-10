@@ -54,9 +54,6 @@ function display_usage()
 	echo '    --address'
 	echo '      Head node address'
 	echo ''
-	echo '    --redis-password'
-	echo '      Specify the password for redis (head node password)'
-	echo ''
 	echo '    --num-cpus'
 	echo '      Number of cpus available/to use in this node'
 	echo ''
@@ -81,7 +78,6 @@ function display_usage()
 # set control variable
 REMOTE_ADDRESS=""
 HEAD_ADDRESS=""
-REDIS_PASS=""
 PYTHONPATH=""
 WORKINGDIR=""
 RAVEN_FRAMEWORK_DIR=""
@@ -105,10 +101,6 @@ do
     --address)
       shift
       HEAD_ADDRESS=$1
-      ;;
-    --redis-password)
-      shift
-      REDIS_PASS=$1
       ;;
     --num-cpus)
       shift
@@ -151,12 +143,6 @@ then
   exit
 fi
 
-if [[ "$REDIS_PASS" == "" ]];
-then
-  echo ... ERROR: --redis-password argument must be inputted !
-  exit
-fi
-
 if [[ "$PYTHONPATH" == "" ]];
 then
   echo ... ERROR: --python-path argument must be inputted !
@@ -178,8 +164,8 @@ START_OUTPUT=$CWD/server_start_debug_$REMOTE_ADDRESS
 
 if [[ "$REMOTE_BASH" == "" ]];
 then
-  ssh $REMOTE_ADDRESS $ECE_SCRIPT_DIR/server_start.py ${WORKINGDIR} ${OUTPUT} ${PYTHONPATH} "${ECE_SCRIPT_DIR}/start_ray.sh $OUTPUT $HEAD_ADDRESS $REDIS_PASS $NUM_CPUS $RAVEN_FRAMEWORK_DIR" 2>&1 | tee $START_OUTPUT
+  ssh $REMOTE_ADDRESS $ECE_SCRIPT_DIR/server_start.py ${WORKINGDIR} ${OUTPUT} ${PYTHONPATH} "${ECE_SCRIPT_DIR}/start_ray.sh $OUTPUT $HEAD_ADDRESS $NUM_CPUS $RAVEN_FRAMEWORK_DIR" 2>&1 | tee $START_OUTPUT
 else
-  ssh $REMOTE_ADDRESS $ECE_SCRIPT_DIR/server_start.py ${WORKINGDIR} ${OUTPUT} ${PYTHONPATH} "${ECE_SCRIPT_DIR}/start_ray.sh $OUTPUT $HEAD_ADDRESS $REDIS_PASS $NUM_CPUS $RAVEN_FRAMEWORK_DIR $REMOTE_BASH" 2>&1 | tee $START_OUTPUT
+  ssh $REMOTE_ADDRESS $ECE_SCRIPT_DIR/server_start.py ${WORKINGDIR} ${OUTPUT} ${PYTHONPATH} "${ECE_SCRIPT_DIR}/start_ray.sh $OUTPUT $HEAD_ADDRESS $NUM_CPUS $RAVEN_FRAMEWORK_DIR $REMOTE_BASH" 2>&1 | tee $START_OUTPUT
 fi
 echo finishing start remote servers for $REMOTE_ADDRESS >> $START_OUTPUT
