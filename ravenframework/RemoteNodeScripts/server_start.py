@@ -44,7 +44,7 @@ if re.search("lib.python", pythonPath):
     if not re.search("lib.python", part):
       newpath.append(part)
   pythonPath = os.pathsep.join(newpath)
-  print("adjusted pythonpath:",pythonPath)
+  #print("adjusted pythonpath:",pythonPath)
 os.environ["PYTHONPATH"] = pythonPath
 
 #Close standard in, out, and error
