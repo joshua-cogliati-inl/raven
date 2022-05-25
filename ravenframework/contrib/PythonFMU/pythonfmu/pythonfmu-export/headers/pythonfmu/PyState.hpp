@@ -4,6 +4,7 @@
 
 #include <Python.h>
 #include <iostream>
+#include <dlfcn.h>
 
 namespace pythonfmu
 {
@@ -18,6 +19,7 @@ public:
         if (!was_initialized_) {
             Py_SetProgramName(L"./PythonFMU");
             Py_Initialize();
+          dlopen("libpython3.7m.so", RTLD_NOW | RTLD_GLOBAL);
             PyEval_InitThreads();
             _mainPyThread = PyEval_SaveThread();
         }

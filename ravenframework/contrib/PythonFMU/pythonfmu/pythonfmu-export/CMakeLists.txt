@@ -74,7 +74,7 @@ if (WIN32)
 else ()
   target_link_libraries(pythonfmu-export
         PRIVATE
-        Python3::Module
+        Python3::Python
         )
 endif ()
 
