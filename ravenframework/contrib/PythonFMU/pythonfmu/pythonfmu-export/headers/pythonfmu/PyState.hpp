@@ -4,7 +4,9 @@
 
 #include <Python.h>
 #include <iostream>
+#ifdef __linux__
 #include <dlfcn.h>
+#endif
 
 namespace pythonfmu
 {
@@ -19,6 +21,10 @@ public:
         if (!was_initialized_) {
             Py_SetProgramName(L"./PythonFMU");
             Py_Initialize();
+#ifdef __linux__
+            //On linux, we need to load the python library
+            // with dlopen and global to get all the python
+            // symbols.
             PyObject * apiflags = PySys_GetObject("abiflags");
             if (PyUnicode_Check(apiflags)) {
                 wchar_t apiflags_w[16];
@@ -30,6 +36,7 @@ public:
                 //printf("python library: %s\n", library);
                 dlopen(library, RTLD_NOW | RTLD_GLOBAL);
             }
+#endif
             PyEval_InitThreads();
             _mainPyThread = PyEval_SaveThread();
         }
