@@ -113,6 +113,9 @@ class JobHandler(BaseType):
     self.__failedJobs = {}
     ## Dict containing info about batching
     self.__batching = collections.defaultdict()
+    #The last time.time() cleanJobQueue was run
+    self.__lastClean = -1.0
+
 
   def applyRunInfo(self, runInfo):
     """
@@ -448,6 +451,8 @@ class JobHandler(BaseType):
     while not self.completed:
       self.fillJobQueue()
       self.cleanJobQueue()
+      self.__lastClean = time.time()
+
       ## TODO May want to revisit this:
       ## http://stackoverflow.com/questions/29082268/python-time-sleep-vs-event-wait
       ## probably when we move to Python 3.
@@ -820,6 +825,15 @@ class JobHandler(BaseType):
     activeRuns = sum(run is not None for run in self.__running + self.__clientRunning)
     return activeRuns
 
+  def _numQueued(self):
+    """
+      Returns the number of runs currently waiting in main queue.
+      @ In, None
+      @ Out, queueSize, int, number of runs in queue
+    """
+    queueSize = len(self.__queue)
+    return queueSize
+
   def _numQueuedTotal(self):
     """
       Returns the number of runs currently waiting in both queue.
@@ -828,6 +842,14 @@ class JobHandler(BaseType):
     """
     queueSize = len(self.__queue) + len(self.__clientQueue)
     return queueSize
+
+  def _lastClean(self):
+    """
+      Returns the time the last job queue clean happened
+      @ In, None
+      @ Out, float, __lastClean results of time.time()
+    """
+    return self.__lastClean
 
   def numSubmitted(self):
     """
