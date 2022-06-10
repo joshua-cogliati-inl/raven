@@ -115,6 +115,8 @@ class JobHandler(BaseType):
     self.__batching = collections.defaultdict()
     #The last time.time() cleanJobQueue was run
     self.__lastClean = -1.0
+    #threads used by startLoop
+    self.__startLoopThreads = []
 
 
   def applyRunInfo(self, runInfo):
@@ -442,12 +444,21 @@ class JobHandler(BaseType):
 
     return servers
 
+  def _getThreadList(self):
+    """
+      returns list of threads used by start loop
+      @ In, None
+      @ Out, list, __startLoopThreads, list of threads
+    """
+    return self.__startLoopThreads
+
   def startLoop(self):
     """
     This function begins the polling loop for the JobHandler where it will
     constantly fill up its running queue with jobs in its pending queue and
     unload finished jobs into its finished queue to be extracted by
     """
+    self.__startLoopThreads.append(threading.current_thread())
     while not self.completed:
       self.fillJobQueue()
       self.cleanJobQueue()
