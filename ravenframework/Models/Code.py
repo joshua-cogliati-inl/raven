@@ -576,6 +576,7 @@ class Code(Model):
       command = self._expandCommand(command)
     self.raiseADebug(f'shell execution command: "{command}"')
     self.raiseADebug('shell cwd: "'+localenv['PWD']+'"')
+    self.raiseADebug('self pid:' + str(os.getpid())+' ppid: '+str(os.getppid()))
     ## reset python path
     localenv.pop('PYTHONPATH',None)
     ## This code should be evaluated by the job handler, so it is fine to wait
