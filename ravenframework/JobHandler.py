@@ -24,6 +24,7 @@ import sys
 import threading
 from random import randint
 import socket
+import time
 
 from .utils import importerUtils as im
 from .utils import utils
@@ -103,6 +104,11 @@ class JobHandler(BaseType):
     self.__batching = collections.defaultdict()
     self.rayInstanciatedOutside = None
     self.remoteServers = None
+    #The last time.time() cleanJobQueue was run
+    self.__lastClean = -1.0
+    #threads used by startLoop
+    self.__startLoopThreads = []
+
 
   def applyRunInfo(self, runInfo):
     """
@@ -431,15 +437,26 @@ class JobHandler(BaseType):
 
     return servers
 
+  def _getThreadList(self):
+    """
+      returns list of threads used by start loop
+      @ In, None
+      @ Out, list, __startLoopThreads, list of threads
+    """
+    return self.__startLoopThreads
+
   def startLoop(self):
     """
     This function begins the polling loop for the JobHandler where it will
     constantly fill up its running queue with jobs in its pending queue and
     unload finished jobs into its finished queue to be extracted by
     """
+    self.__startLoopThreads.append(threading.current_thread())
     while not self.completed:
       self.fillJobQueue()
       self.cleanJobQueue()
+      self.__lastClean = time.time()
+
       # TODO May want to revisit this:
       # http://stackoverflow.com/questions/29082268/python-time-sleep-vs-event-wait
       # probably when we move to Python 3.
@@ -820,6 +837,14 @@ class JobHandler(BaseType):
     """
     queueSize = len(self.__queue) + len(self.__clientQueue)
     return queueSize
+
+  def _lastClean(self):
+    """
+      Returns the time the last job queue clean happened
+      @ In, None
+      @ Out, float, __lastClean results of time.time()
+    """
+    return self.__lastClean
 
   def numSubmitted(self):
     """
