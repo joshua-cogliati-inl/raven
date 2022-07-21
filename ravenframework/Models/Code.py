@@ -770,6 +770,9 @@ class Code(Model):
       @ Out, None
     """
     evaluation = finishedJob.getEvaluation()
+    if not hasattr(evaluation, 'pop'):
+      print("evaluation", evaluation, "job", finishedJob, finishedJob.getReturnCode())
+
 
     self._replaceVariablesNamesWithAliasSystem(evaluation, 'input',True)
     # in the event a batch is run, the evaluations will be a dict as {'RAVEN_isBatch':True, 'realizations': [...]}
