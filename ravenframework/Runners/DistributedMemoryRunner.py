@@ -105,6 +105,7 @@ class DistributedMemoryRunner(InternalRunner):
       @ In, None
       @ Out, None
     """
+    print("in _collectRunnerResponse", self, "rR", self.runReturn, "rC", self.returnCode, "hBA", self.hasBeenAdded)
     with self.__funcLock:
       if not self.hasBeenAdded:
         if self.__func is not None:
