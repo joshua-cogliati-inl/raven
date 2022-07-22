@@ -81,6 +81,7 @@ class InternalRunner(Runner):
       @ In, None
       @ Out, returnCode, int,  the return code of this evaluation
     """
+    print("in getReturnCode", self, "rR", self.runReturn, "rC", self.returnCode, "hBA", self.hasBeenAdded)
     return self.returnCode
 
   def getEvaluation(self):
@@ -92,8 +93,10 @@ class InternalRunner(Runner):
         instance is executing returns, or if the job failed, will return an
         Error
     """
+    print("in getEvaluation", self, "rR", self.runReturn, "rC", self.returnCode, "hBA", self.hasBeenAdded)
     if self.isDone():
       self._collectRunnerResponse()
+      print("in getEvaluation2", self, "rR", self.runReturn, "rC", self.returnCode, "hBA", self.hasBeenAdded)
       if self.runReturn is None:
         self.returnCode = -1
         return Error()

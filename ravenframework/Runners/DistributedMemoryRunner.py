@@ -56,6 +56,7 @@ class DistributedMemoryRunner(InternalRunner):
     if not im.isLibAvail("ray"):
       self.__ppserver, args = args[0], args[1:]
     super().__init__(args, functionToRun, **kwargs)
+    # __func (when using ray) is the object ref
     self.__func = None
     # __funcLock is needed because if isDone and kill are called at the
     # same time, isDone might end up trying to use __func after it is deleted
@@ -74,17 +75,24 @@ class DistributedMemoryRunner(InternalRunner):
     with self.__funcLock:
       if self.__func is None:
         return True
+      elif self.hasBeenAdded:
+        return True
       else:
         if im.isLibAvail("ray"):
           try:
-            ray.get(self.__func, timeout=waitTimeOut)
+            runReturn = ray.get(self.__func, timeout=waitTimeOut)
+            self.runReturn = runReturn
+            self.hasBeenAdded = True
+            if self.runReturn is None:
+              self.returnCode = -1
             return True
           except ray.exceptions.GetTimeoutError:
             return False
           except ray.exceptions.RayTaskError:
             #The code gets this undocumented error, and
             # I assume it means the task has unfixably died,
-            # and so is done
+            # and so is done, and set return code to failed.
+            self.returnCode = -1
             return True
           #Alternative that was tried:
           #return self.__func in ray.wait([self.__func], timeout=waitTimeOut)[0]
@@ -99,12 +107,14 @@ class DistributedMemoryRunner(InternalRunner):
       @ In, None
       @ Out, None
     """
-    if not self.hasBeenAdded:
-      if self.__func is not None:
-        self.runReturn = ray.get(self.__func) if im.isLibAvail("ray") else self.__func()
-      else:
-        self.runReturn = None
-      self.hasBeenAdded = True
+    print("in _collectRunnerResponse", self, "rR", self.runReturn, "rC", self.returnCode, "hBA", self.hasBeenAdded)
+    with self.__funcLock:
+      if not self.hasBeenAdded:
+        if self.__func is not None:
+          self.runReturn = ray.get(self.__func) if im.isLibAvail("ray") else self.__func()
+        else:
+          self.runReturn = None
+        self.hasBeenAdded = True
 
   def start(self):
     """
