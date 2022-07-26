@@ -83,6 +83,8 @@ class DistributedMemoryRunner(InternalRunner):
             runReturn = ray.get(self.__func, timeout=waitTimeOut)
             self.runReturn = runReturn
             self.hasBeenAdded = True
+            del self.__func
+            self.__func = None
             if self.runReturn is None:
               self.returnCode = -1
             return True
