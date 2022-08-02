@@ -225,11 +225,11 @@ class JobHandler(BaseType):
         self.rayServer = ray.init(num_cpus=int(self.runInfoDict['totalNumCoresUsed']),include_dashboard=db) if _rayAvail else \
                            pp.Server(ncpus=int(self.runInfoDict['totalNumCoresUsed']))
       if _rayAvail:
-        self.raiseADebug("Head node IP address: ", self.rayServer['node_ip_address'])
-        self.raiseADebug("Redis address       : ", self.rayServer['redis_address'])
-        self.raiseADebug("Object store address: ", self.rayServer['object_store_address'])
-        self.raiseADebug("Raylet socket name  : ", self.rayServer['raylet_socket_name'])
-        self.raiseADebug("Session directory   : ", self.rayServer['session_dir'])
+        self.raiseADebug("Head node IP address: ", self.rayServer.address_info['node_ip_address'])
+        self.raiseADebug("Redis address       : ", self.rayServer.address_info['redis_address'])
+        self.raiseADebug("Object store address: ", self.rayServer.address_info['object_store_address'])
+        self.raiseADebug("Raylet socket name  : ", self.rayServer.address_info['raylet_socket_name'])
+        self.raiseADebug("Session directory   : ", self.rayServer.address_info['session_dir'])
         if servers:
           self.raiseADebug("# of remote servers : ", str(len(servers)))
           self.raiseADebug("Remote servers      : ", " , ".join(servers))
