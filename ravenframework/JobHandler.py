@@ -470,6 +470,7 @@ class JobHandler(BaseType):
     """
     assert "original_function" in dir(functionToRun), "to parallelize a function, it must be" \
            " decorated with RAVEN Parallel decorator"
+    self.raiseADebug(f"adding job identifier: {identifier} clientQueue {clientQueue} groupInfo {groupInfo}")
     if self.rayServer is None or forceUseThreads:
       internalJob = Runners.factory.returnInstance('SharedMemoryRunner', args,
                                                    functionToRun.original_function,
