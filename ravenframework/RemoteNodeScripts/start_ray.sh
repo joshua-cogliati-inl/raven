@@ -37,6 +37,10 @@ fi
 which ray >> $OUTFILE 2>&1
 hostname >> $OUTFILE
 
+#ulimit -Su hard
+ulimit -a >> $OUTFILE
+
 echo loaded >> $OUTFILE
 command -v ray >> $OUTFILE 2>&1
-ray start --verbose --address=$HEAD_ADDRESS --num-cpus $NUM_CPUS >> $OUTFILE 2>&1
+echo ray start --verbose --address=$HEAD_ADDRESS --num-cpus $NUM_CPUS --min-worker-port 10002 --max-worker-port $((10002+8*$NUM_CPUS))  >> $OUTFILE
+ray start --verbose --address=$HEAD_ADDRESS --num-cpus $NUM_CPUS  --min-worker-port 10002 --max-worker-port $((10002+8*$NUM_CPUS)) >> $OUTFILE 2>&1
