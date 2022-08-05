@@ -20,6 +20,7 @@ module load openmpi
 
 which python
 which mpiexec
+#ulimit -Su hard
 echo ''
 echo $COMMAND
 $COMMAND
