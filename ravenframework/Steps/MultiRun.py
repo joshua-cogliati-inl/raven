@@ -23,6 +23,7 @@
 #External Modules------------------------------------------------------------------------------------
 import time
 import copy
+import gc
 #External Modules End--------------------------------------------------------------------------------
 
 #Internal Modules------------------------------------------------------------------------------------
@@ -255,7 +256,8 @@ class MultiRun(SingleRun):
         self.raiseADebug((f"Continuing to run. isFinished: {jobHandler.isFinished()} "
                           f"running: {numRunning} rest running: {numTotalRunning - numRunning} "
                           f"unclaimed runs: {len(jobHandler.getFinishedNoPop())} "
-                          f"queued: {jobHandler._numQueuedTotal()}"))
+                          f"queued: {jobHandler._numQueuedTotal()}"
+                          f"gc: {gc.collect()}"))
       # Note: calling amIreadyToProvideAnInput can change results,
       # but might be helpful for debugging sometimes
       # "sampler ready with input: %r" sampler.amIreadyToProvideAnInput()
