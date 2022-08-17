@@ -59,7 +59,7 @@ Note all install methods after "main" take
     <nomkl os='linux' skip_check='True'/>
     <numexpr os='linux'/>
     <cmake skip_check='True' optional='True'/>
-    <ray source="pip" pip_extra="[default]">1.12</ray>
+    <ray source="pip" pip_extra="[default]">1.13</ray>
     <redis source="pip" os='windows'/>
     <imageio>2.9</imageio>
     <line_profiler optional='True'/>
