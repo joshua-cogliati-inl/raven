@@ -215,10 +215,12 @@ class JobHandler(BaseType):
           # add names in runInfo
           self.runInfoDict['remoteNodes'] = servers
           ## initialize ray server with nProcs
+          self.raiseADebug(f"ray.init(address={address},include_dashboard={db})")
           self.rayServer = ray.init(address=address,log_to_driver=False,include_dashboard=db) if _rayAvail else pp.Server(ncpus=int(nProcsHead))
           self.raiseADebug("NODES IN THE CLUSTER : ", str(ray.nodes()))
         else:
           self.raiseADebug("Executing RAY in the cluster but with a single node configuration")
+          self.raiseADebug(f"ray.init(num_cpus={nProcsHead},include_dashboard={db})")
           self.rayServer = ray.init(num_cpus=nProcsHead,log_to_driver=False,include_dashboard=db)
       else:
         self.rayServer = ray.init(num_cpus=int(self.runInfoDict['totalNumCoresUsed']),include_dashboard=db) if _rayAvail else \
@@ -307,6 +309,7 @@ class JobHandler(BaseType):
         command.append("--num-cpus="+str(nProcs))
       if port is not None:
         command.append("--port="+str(port))
+      self.raiseADebug("starting ray: "+str(command))
       outFile = open("ray_head.ip", 'w')
       rayStart = utils.pickleSafeSubprocessPopen(command,shell=False,stdout=outFile, stderr=outFile, env=localEnv)
       rayStart.wait()
