@@ -171,7 +171,9 @@ class RAVEN(CodeInterfaceBase):
     # we set the command type to serial since the SLAVE RAVEN handles the parallel on its own
     # executable command will be: "python <path>/raven_framework.py"
     # make sure executable ends with .py
-    if not executable.endswith(".py"):
+    if executable == 'raven_framework':
+      self.preCommand = ''
+    elif not executable.endswith(".py"):
       executable += ".py"
     executeCommand = [('serial', self.preCommand + executable+ ' ' + inputFiles[index].getFilename())]
     returnCommand = executeCommand, outputfile
