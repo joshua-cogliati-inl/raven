@@ -113,7 +113,11 @@ class DistributedMemoryRunner(InternalRunner):
     with self.__funcLock:
       if not self.hasBeenAdded:
         if self.__func is not None:
-          self.runReturn = ray.get(self.__func) if im.isLibAvail("ray") else self.__func()
+          try:
+            self.runReturn = ray.get(self.__func) if im.isLibAvail("ray") else self.__func()
+          except ray.exceptions.RayTaskError as err:
+            self.raiseAWarning("In _collectRunnerResponse got "+str(err))
+            self.runReturn = None
         else:
           self.runReturn = None
         self.hasBeenAdded = True
