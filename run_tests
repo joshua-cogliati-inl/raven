@@ -47,9 +47,11 @@ echo 'Loading libraries ...'
 if  [[ "$INSTALLATION_MANAGER" == "CONDA" ]];
 then
     source $SCRIPT_DIR/scripts/establish_conda_env.sh --load
+    PATH="$PATH:$SCRIPT_DIR" #add for raven_framework
 elif [[ "$INSTALLATION_MANAGER" == "PIP" ]];
 then
     source $SCRIPT_DIR/scripts/establish_conda_env.sh --load --installation-manager PIP
+    PATH="$PATH:$SCRIPT_DIR" #add for raven_framework
 else
     echo No installation: $INSTALLATION_MANAGER
 fi

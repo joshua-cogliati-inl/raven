@@ -61,11 +61,11 @@ class TestPythonRaven(unittest.TestCase):
     target = self.raven._findFile(fname)
     self.assertEqual(targetWorkflow, target)
 
-  def test_findFileFramework(self):
-    """ Find file given path relative to RAVEN framework """
-    fname = os.path.join('..', 'tests', 'framework', 'basic.xml')
-    target = self.raven._findFile(fname)
-    self.assertEqual(targetWorkflow, target)
+  # def test_findFileFramework(self):
+  #   """ Find file given path relative to RAVEN framework """
+  #   fname = os.path.join('..', 'tests', 'framework', 'basic.xml')
+  #   target = self.raven._findFile(fname)
+  #   self.assertEqual(targetWorkflow, target)
 
   # ********************
   # Workflows
