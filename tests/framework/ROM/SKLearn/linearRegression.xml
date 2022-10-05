@@ -30,7 +30,7 @@
       sample,
       train,
       resample,
-      dumpinfo
+      writemodel
     </Sequence>
   </RunInfo>
 
@@ -49,6 +49,7 @@
 
   <ExternalXML node="Distributions" xmlToLoad="sharedDistributions.xml"/>
   <ExternalXML node="Samplers" xmlToLoad="sharedSamplers.xml"/>
+  <!-- <ExternalXML node="Steps" xmlToLoad="sharedSteps.xml"/> -->
 
   <Steps>
     <MultiRun name="sample" sleepTime="1e-5">
@@ -68,12 +69,13 @@
       <Input class="DataObjects" type="PointSet">trainingData</Input>
       <Output class="Models" type="ROM">modelUnderTest</Output>
     </RomTrainer>
-    <IOStep name="dumpinfo">
+    <IOStep name="writemodel">
       <Input class="Models" type="ROM">modelUnderTest</Input>
       <Output class="DataObjects" type="PointSet">modelOut</Output>
       <Output class="OutStreams" type="Print">modelOut</Output>
     </IOStep>
   </Steps>
+
 
   <OutStreams>
     <!-- A csv file containing the output of the example -->
@@ -91,26 +93,6 @@
     </Print>
   </OutStreams>
 
-  <DataObjects>
-    <!-- The input PointSet object -->
-    <PointSet name="dummyIN">
-      <Input>X,Y</Input>
-      <Output>OutputPlaceHolder</Output>
-    </PointSet>
-    <PointSet name="trainingData">
-      <Input>X,Y</Input>
-      <Output>Z</Output>
-    </PointSet>
-    <!-- The output PointSet objects -->
-    <PointSet name="outData">
-      <Input>X,Y</Input>
-      <Output>Z</Output>
-    </PointSet>
-    <PointSet name="modelOut">
-      <Input>InputPlaceHolder</Input>
-      <Output>OutputPlaceHolder</Output>
-    </PointSet>
-  </DataObjects>
-
+  <ExternalXML node="DataObjects" xmlToLoad="sharedDataObjects.xml"/>
 
 </Simulation>
