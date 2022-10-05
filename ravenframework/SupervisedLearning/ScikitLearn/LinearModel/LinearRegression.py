@@ -86,3 +86,17 @@ class LinearRegression(ScikitLearnBase):
     # notFound must be empty
     assert(not notFound)
     self.initializeModel(settings)
+
+  def writeXML(self, writeTo, targets=None, skip=None):
+    """
+      Allows the SVE to put whatever it wants into an XML to print to file.
+      Overload in subclasses.
+      @ In, writeTo, xmlUtils.StaticXmlElement, StaticXmlElement to write to
+      @ In, targets, list, optional, list of targets for whom information should be written
+      @ In, skip, list, optional, list of targets to skip
+      @ Out, None
+    """
+    #breakpoint()
+    for index, targetName in enumerate(self.target):
+      writeTo.addVector("ROM", "coefs_"+targetName, ",".join([str(x) for x in self.model.estimators_[index].coef_]))
+      writeTo.addScalar("ROM", "intercept_"+targetName, str(self.model.estimators_[index].intercept_))
