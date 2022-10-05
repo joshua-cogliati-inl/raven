@@ -97,6 +97,10 @@ class LinearRegression(ScikitLearnBase):
       @ Out, None
     """
     #breakpoint()
+    self._vectorWriteList = ["coef_"]
+    self._scalarWriteList = ["intercept_"]
     for index, targetName in enumerate(self.target):
-      writeTo.addVector("ROM", "coefs_"+targetName, ",".join([str(x) for x in self.model.estimators_[index].coef_]))
-      writeTo.addScalar("ROM", "intercept_"+targetName, str(self.model.estimators_[index].intercept_))
+      for vectorName in self._vectorWriteList:
+        writeTo.addVector("ROM", vectorName+targetName, ",".join([str(x) for x in getattr(self.model.estimators_[index], vectorName)]))
+      for scalarName in self._scalarWriteList:
+        writeTo.addScalar("ROM", scalarName+targetName, str(getattr(self.model.estimators_[index], scalarName)))
