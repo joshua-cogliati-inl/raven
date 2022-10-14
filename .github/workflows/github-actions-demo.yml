@@ -16,3 +16,12 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo " This job's status is ${{ job.status }}."
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.8
+      - run: pwd
+      - run: ./scripts/establish_conda_env.sh --install --conda-defs $CONDA/etc/profile.d/conda.sh
+      - run: ./run_tests --library-report
+      - run: ./build_raven
+      - run: ./run_tests
