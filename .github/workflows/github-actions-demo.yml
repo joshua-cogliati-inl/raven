@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: 3.8
       - run: pwd
-      - run: ./scripts/establish_conda_env.sh --install --conda-defs $CONDA/etc/profile.d/conda.sh
+      - run: ./scripts/establish_conda_env.sh --install
       - run: ./build_raven
       - run: ./run_tests --library-report
       - run: ./run_tests
