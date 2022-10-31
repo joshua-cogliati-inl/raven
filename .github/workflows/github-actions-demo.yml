@@ -24,4 +24,4 @@ jobs:
       - run: ./scripts/establish_conda_env.sh --install
       - run: ./build_raven
       - run: ./run_tests --library-report
-      - run: ./run_tests
+      - run: ./run_tests -j4
