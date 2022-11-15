@@ -2,7 +2,7 @@ name: GitHub Action RAVEN test
 run-name: ${{ github.actor }} is testing out RAVEN
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  Test-Raven-Action:
     runs-on: self-hosted
     steps:
       - run: echo " The job was automatically triggered by a ${{ github.event_name }} event."
