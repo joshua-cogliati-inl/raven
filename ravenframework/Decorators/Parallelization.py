@@ -16,6 +16,45 @@
 
   @author: alfoa
 """
+import pickle
+
+def _pickleLength(obj):
+  """
+    returns the length of the object when pickled
+    @ In, obj, an object that can be pickled
+    @ Out, pickleLength, int, length of the pickle
+  """
+  try:
+    return len(pickle.dumps(obj))
+  except (TypeError, AttributeError, PicklingError):
+    return -1
+
+def _printPickleInfo(func):
+  """
+    returns a new function that prints the arguments pickle length
+    @ In, func, a function with pickleable arguments
+    @ Out, newFunc, a new function that calls func, and prints the length of
+     the arguments.
+  """
+  def newFunc(*args, **kwargs):
+    """
+      newFunc is a new function that runs the original function
+      @ In, *args, arguments
+      @ In, **kwargs, keyword arguments
+      @ Out, whatever func returned.
+    """
+    s = ""
+    for a in args:
+      s += ",{}".format(_pickleLength(a))
+    for k, v in kwargs.items():
+      s += ",{}:{}".format(k, _pickleLength(v))
+    s = "pickleLengths "+func.__name__+"("+s[1:]+")"
+    print(s)
+    return func(*args, **kwargs)
+  newFunc.origFunc = func
+  return newFunc
+
+
 #Internal Modules---------------------------------------------------------------
 from ..utils import importerUtils as im
 from ..utils.utils import Object
@@ -70,6 +109,6 @@ class Parallel(object):
     else:
       # decorate the function
       decorated = self.decorator(func)
-    decorated.__dict__['original_function'] = func
+    decorated.__dict__['original_function'] = _printPickleInfo(func)
     return decorated
 
