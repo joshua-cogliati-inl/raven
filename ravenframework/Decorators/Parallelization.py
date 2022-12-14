@@ -26,7 +26,7 @@ def _pickleLength(obj):
   """
   try:
     return len(pickle.dumps(obj))
-  except (TypeError, AttributeError, PicklingError):
+  except (TypeError, AttributeError, pickle.PicklingError):
     return -1
 
 def _printPickleInfo(func):
