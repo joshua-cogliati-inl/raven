@@ -50,7 +50,9 @@ def _printPickleInfo(func):
       s += ",{}:{}".format(k, _pickleLength(v))
     s = "pickleLengths "+func.__name__+"("+s[1:]+")"
     print(s)
-    return func(*args, **kwargs)
+    retVal = func(*args, **kwargs)
+    print("pickleLengths return", _pickleLength(retVal))
+    return retVal
   newFunc.origFunc = func
   return newFunc
 
