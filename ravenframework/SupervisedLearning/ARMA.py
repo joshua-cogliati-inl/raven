@@ -252,6 +252,11 @@ class ARMA(SupervisedLearning):
     domainEnumType = InputTypes.makeEnumType('domain', 'truncateDomainType', ['positive', 'negative'])
     outTrunc.addParam('domain', domainEnumType, True)
     specs.addSub(outTrunc)
+
+    clusterEvalModeEnum = InputTypes.makeEnumType('clusterEvalModeEnum', 'clusterEvalModeType', ['clustered', 'truncated', 'full'])
+    specs.addSub(InputData.parameterInputFactory('clusterEvalMode', contentType=clusterEvalModeEnum)) # for pickled ROMCollection
+    specs.addSub(InputData.parameterInputFactory('maxCycles', contentType=InputTypes.IntegerType)) # for pickled Interpolated ROMCollection
+
     return specs
 
   ### INHERITED METHODS ###
