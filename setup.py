@@ -11,8 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from distutils.core import setup, Extension
+#from distutils.core import setup, Extension
+#from distutils.command.build import build
+from distutils.core import Extension
+from cx_Freeze import setup, Executable
 from distutils.command.build import build
+from cx_Freeze.command import build_exe
 import os
 import sys
 import setuptools
@@ -87,4 +91,5 @@ setup(name='raven_framework',
                     include_dirs=include_dirs, swig_opts=swig_opts,extra_compile_args=extra_compile_args)],
       py_modules=['AMSC.amsc','crow_modules.distribution1D','crow_modules.randomENG','crow_modules.interpolationND', 'AMSC.AMSC_Object'],
       packages=['ravenframework.'+x for x in setuptools.find_packages('ravenframework')]+['ravenframework'],
-      cmdclass={'build': CustomBuild})
+      cmdclass={'build': CustomBuild,'build_exe': build_exe.BuildEXE},
+      executables=[Executable("raven_framework.py")],)
