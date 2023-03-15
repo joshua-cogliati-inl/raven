@@ -28,16 +28,24 @@ import re
 
 from .utils import importerUtils as im
 from .utils import utils
+from .utils.utils import ParallelLibEnum
 from .BaseClasses import BaseType
 from . import Runners
 from . import Models
 # for internal parallel
 # TODO: REMOVE WHEN RAY AVAILABLE FOR WINDOWS
 _rayAvail = im.isLibAvail("ray")
-if _rayAvail:
+_daskAvail = im.isLibAvail("dask")
+if _daskAvail:
+  import dask
+  import dask.distributed
+  parallelLib = ParallelLibEnum.dask
+elif _rayAvail:
   import ray
+  parallelLib = ParallelLibEnum.ray
 else:
   import pp
+  parallelLib = ParallelLibEnum.pp
 # end internal parallel module
 # Internal Modules End-----------------------------------------------------------
 

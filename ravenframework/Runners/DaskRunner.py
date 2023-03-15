@@ -21,10 +21,9 @@ import sys
 import gc
 import copy
 import threading
-from enum import Enum
 from ..utils import importerUtils as im
+from ..utils.utils import ParallelLibEnum
 
-ParallelLibEnum = Enum('ParallelLibEnum', ['dask','ray','pp'])
 
 ## TODO: REMOVE WHEN RAY AVAILABLE FOR WINDOWOS
 if im.isLibAvail("dask"):
