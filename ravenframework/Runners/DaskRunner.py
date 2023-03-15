@@ -109,16 +109,7 @@ class DaskRunner(InternalRunner):
       elif self.hasBeenAdded:
         return True
       else:
-        try:
-          runReturn = self.__func.result(waitTimeOut)
-          self.runReturn = runReturn
-          self.hasBeenAdded = True
-          if self.runReturn is None:
-            self.returnCode = -1
-          return True
-        except dask.distributed.TimeoutError:
-          #Timeout, so still running.
-          return False
+        return self.__func.done()
 
   def _collectRunnerResponse(self):
     """
