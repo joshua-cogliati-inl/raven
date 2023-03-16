@@ -211,6 +211,9 @@ class DataSet(DataObject):
     if indexMap is not None:
       # keep only those parts of the indexMap that correspond to variables we care about.
       indexMap = dict((key, val) for key, val in indexMap[0].items() if key in self.getVars()) # [0] because everything is nested in a list by now, it seems
+    #If the index is the magical autoindex, generate it automatically
+    if self.indexes == ['autoindex'] and 'autoindex' in self._pivotParams:
+      rlz['autoindex'] = np.arange(len(rlz[self._pivotParams['autoindex'][0]]))
     # clean out entries that aren't desired
     try:
       rlz = dict((var, rlz[var]) for var in self.getVars() + self.indexes)
