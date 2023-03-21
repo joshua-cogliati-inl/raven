@@ -343,7 +343,7 @@ class JobHandler(BaseType):
           self.raiseAWarning("RAY FAILED TO TERMINATE ON NODE: "+nodeAddress)
       # shutdown ray API (object storage, plasma, etc.)
       ray.shutdown()
-    elif parallelLib == ParallelLibEnum.dask and not self.rayInstanciatedOutside:
+    elif parallelLib == ParallelLibEnum.dask and self.rayServer is not None and not self.rayInstanciatedOutside:
       self.rayServer.close()
       if self.daskSchedulerFile is not None:
         self._daskScheduler.terminate()
