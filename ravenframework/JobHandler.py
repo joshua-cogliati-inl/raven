@@ -114,6 +114,7 @@ class JobHandler(BaseType):
     self.daskInstanciatedOutside = None
     self.remoteServers = None
     self.daskSchedulerFile = None
+    self._daskScheduler = None
 
   def __getstate__(self):
     """
@@ -356,7 +357,7 @@ class JobHandler(BaseType):
       ray.shutdown()
     elif parallelLib == ParallelLibEnum.dask and self.rayServer is not None and not self.rayInstanciatedOutside:
       self.rayServer.close()
-      if self.daskSchedulerFile is not None:
+      if self._daskScheduler is not None:
         self._daskScheduler.terminate()
 
   def __runHeadNode(self, nProcs, port=None):
