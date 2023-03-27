@@ -43,7 +43,6 @@ from ..utils import utils
 from .InternalRunner import InternalRunner
 #Internal Modules End--------------------------------------------------------------------------------
 
-waitTimeOut = 0.01 #1e-10 # timeout to check for job to finish
 
 class DaskRunner(InternalRunner):
   """
