@@ -289,7 +289,7 @@ class JobHandler(BaseType):
           self.rayServer = dask.distributed.Client(cluster)
         else:
           self.raiseAWarning("parallellib creation not handled")
-      if _rayAvail:
+      if parallelLib == ParallelLibEnum.ray:
         self.raiseADebug("Head node IP address: ", self.rayServer.address_info['node_ip_address'])
         self.raiseADebug("Redis address       : ", self.rayServer.address_info['redis_address'])
         self.raiseADebug("Object store address: ", self.rayServer.address_info['object_store_address'])
@@ -336,7 +336,7 @@ class JobHandler(BaseType):
       @ In, None
       @ Out, None
     """
-    if _rayAvail and self.rayServer is not None and not self.rayInstanciatedOutside:
+    if parallelLib == ParallelLibEnum.ray and self.rayServer is not None and not self.rayInstanciatedOutside:
       # we need to ssh and stop each remote node cluster (ray)
       servers = []
       if 'remoteNodes' in self.runInfoDict:
