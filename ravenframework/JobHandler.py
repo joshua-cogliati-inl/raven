@@ -39,9 +39,9 @@ _daskAvail = im.isLibAvail("dask")
 if _daskAvail:
   import dask
   import dask.distributed
-elif _rayAvail:
+if _rayAvail:
   import ray
-else:
+if not _daskAvail and not _rayAvail:
   import pp
 
 # end internal parallel module
@@ -64,13 +64,6 @@ class JobHandler(BaseType):
     super().__init__()
     self.printTag = 'Job Handler' # Print tag of this object
     self.runInfoDict = {}         # Container of the running info (RunInfo block in the input file)
-    self._parallelLib = None
-    if _daskAvail:
-      self._parallelLib = ParallelLibEnum.dask
-    elif _rayAvail:
-      self._parallelLib = ParallelLibEnum.ray
-    else:
-      self._parallelLib = ParallelLibEnum.pp
     self.isRayInitialized = False # Is Ray Initialized?
     self.rayServer = None         # Variable containing the info about the RAY parallel server.
                                   # If None, multi-threading is used
@@ -173,6 +166,22 @@ class JobHandler(BaseType):
     with self.__queueLock:
       self.__running       = [None]*self.runInfoDict['batchSize']
       self.__clientRunning = [None]*self.runInfoDict['batchSize']
+    self._parallelLib = ParallelLibEnum.shared
+    if self.runInfoDict['parallelMethod'] is not None:
+      self._parallelLib = self.runInfoDict['parallelMethod']
+    elif self.runInfoDict['internalParallel']:
+      if _daskAvail:
+        self._parallelLib = ParallelLibEnum.dask
+      elif _rayAvail:
+        self._parallelLib = ParallelLibEnum.ray
+      else:
+        self._parallelLib = ParallelLibEnum.pp
+    desiredParallelMethod = f"parallelMethod: {self.runInfoDict['parallelMethod']} internalParallel: {self.runInfoDict['internalParallel']}"
+    self.raiseADebug(f"Using parallelMethod: {self._parallelLib} because Input: {desiredParallelMethod} and Ray: {_rayAvail} and Dask: {_daskAvail}")
+    if self._parallelLib == ParallelLibEnum.dask and not _daskAvail:
+      self.raiseAnError(RuntimeError, f"dask requested but not available. {desiredParallelMethod}")
+    if self._parallelLib == ParallelLibEnum.ray and not _rayAvail:
+      self.raiseAnError(RuntimeError, f"ray requested but not available. {desiredParallelMethod}")
     # internal server is initialized only in case an internal calc is requested
     if not self.isRayInitialized:
       self.__initializeRay()
@@ -208,7 +217,7 @@ class JobHandler(BaseType):
       @ Out, None
     """
     self.raiseADebug("Initializing parallel InternalParallel: {0} Nodes: {1}".format(self.runInfoDict['internalParallel'],len(self.runInfoDict['Nodes'])))
-    if self.runInfoDict['internalParallel']:
+    if self._parallelLib != ParallelLibEnum.shared:
       # dashboard?
       db = self.runInfoDict['includeDashboard']
       # Check if the list of unique nodes is present and, in case, initialize the
