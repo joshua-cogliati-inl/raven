@@ -565,10 +565,10 @@ class JobHandler(BaseType):
                      self.runInfoDict['WorkingDir']]
           self.raiseADebug("command is: "+" ".join(command))
           command.append(self.__removeLibPythonFromPath(localEnv["PYTHONPATH"]))
-          utils.pickleSafeSubprocessPopen(command, env=localEnv)
+          self.remoteServers[nodeId] = utils.pickleSafeSubprocessPopen(command, env=localEnv)
         ## update list of servers
         servers.append(nodeId)
-      if _rayAvail:
+      if self._parallelLib == ParallelLibEnum.ray or self._parallelLib == ParallelLibEnum.dask:
         #wait for the servers to finish starting (prevents zombies)
         for nodeId in uniqueNodes:
           self.remoteServers[nodeId].wait()
