@@ -36,11 +36,6 @@ from . import Models
 # TODO: REMOVE WHEN RAY AVAILABLE FOR WINDOWS
 _rayAvail = im.isLibAvail("ray")
 _daskAvail = im.isLibAvail("dask")
-if _daskAvail:
-  import dask
-  import dask.distributed
-if _rayAvail:
-  import ray
 if not _daskAvail and not _rayAvail:
   import pp
 
@@ -182,6 +177,11 @@ class JobHandler(BaseType):
       self.raiseAnError(RuntimeError, f"dask requested but not available. {desiredParallelMethod}")
     if self._parallelLib == ParallelLibEnum.ray and not _rayAvail:
       self.raiseAnError(RuntimeError, f"ray requested but not available. {desiredParallelMethod}")
+    if self._parallelLib == ParallelLibEnum.dask:
+      import dask
+      import dask.distributed
+    if self._parallelLib == ParallelLibEnum.ray:
+      import ray
     # internal server is initialized only in case an internal calc is requested
     if not self.isRayInitialized:
       self.__initializeRay()
@@ -273,8 +273,10 @@ class JobHandler(BaseType):
           self.runInfoDict['remoteNodes'] = servers
           if self._parallelLib == ParallelLibEnum.ray:
             ## initialize ray server with nProcs
+            import ray
             self.rayServer = ray.init(address=address,log_to_driver=False,include_dashboard=db)
           elif self._parallelLib == ParallelLibEnum.dask:
+            import dask.distributed
             if self.daskSchedulerFile is not None:
               #handle multinode and prestarted configurations
               self.rayServer = dask.distributed.Client(scheduler_file=self.daskSchedulerFile)
@@ -290,15 +292,18 @@ class JobHandler(BaseType):
             self.raiseADebug("NODES IN THE CLUSTER : ", str(ray.nodes()))
         else:
           self.raiseADebug("Executing RAY in the cluster but with a single node configuration")
+          import ray
           self.rayServer = ray.init(num_cpus=nProcsHead,log_to_driver=False,include_dashboard=db)
       else:
         self.raiseADebug("Initializing", "ray" if _rayAvail else "pp","locally with num_cpus: ", self.runInfoDict['totalNumCoresUsed'])
         if self._parallelLib == ParallelLibEnum.ray:
+          import ray
           self.rayServer = ray.init(num_cpus=int(self.runInfoDict['totalNumCoresUsed']),include_dashboard=db)
         elif self._parallelLib == ParallelLibEnum.pp:
           self.rayServer = pp.Server(ncpus=int(self.runInfoDict['totalNumCoresUsed']))
         elif self._parallelLib == ParallelLibEnum.dask:
           #XXX handle multinode and prestarted configurations
+          import dask.distributed
           cluster = dask.distributed.LocalCluster(n_workers=int(self.runInfoDict['totalNumCoresUsed']))
           self.rayServer = dask.distributed.Client(cluster)
         else:
@@ -368,6 +373,7 @@ class JobHandler(BaseType):
         if rayTerminate.returncode != 0:
           self.raiseAWarning("RAY FAILED TO TERMINATE ON NODE: "+nodeAddress)
       # shutdown ray API (object storage, plasma, etc.)
+      import ray
       ray.shutdown()
     elif self._parallelLib == ParallelLibEnum.dask and self.rayServer is not None and not self.rayInstanciatedOutside:
       self.rayServer.close()
@@ -399,6 +405,7 @@ class JobHandler(BaseType):
         self.raiseAnError(RuntimeError, f"RAY failed to start on the --head node! Return code is {rayStart.returncode}")
       else:
         address = self.__getRayInfoFromStart("ray_head.ip")
+      self.raiseADebug("got ray address: "+str(address))
     elif self._parallelLib == ParallelLibEnum.dask:
       self.daskSchedulerFile = os.path.join(self.runInfoDict['WorkingDir'],"scheduler.json")
       if os.path.exists(self.daskSchedulerFile):
@@ -584,6 +591,7 @@ class JobHandler(BaseType):
       @ Out, ref, ray.ObjectRef or object, the reference or the object itself
     """
     if self.rayServer is not None and self._parallelLib == ParallelLibEnum.ray:
+      import ray
       ref = ray.put(copy.deepcopy(data))
     else:
       ref = copy.deepcopy(data)
