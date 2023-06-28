@@ -299,9 +299,9 @@ class HybridModel(HybridModelBase):
       #Do not check for convergence if still evaluating samples.
       # Note that convergence resets the ROM
       with self.__busyDictLock:
-        cvMetrics = romInfo['Instance'].convergence(self.tempTargetEvaluation)
-        if cvMetrics is not None:
-          if len(romInfo['Busy']) == 0:
+        if len(romInfo['Busy']) == 0:
+          cvMetrics = romInfo['Instance'].convergence(self.tempTargetEvaluation)
+          if cvMetrics is not None:
             converged = self.isRomConverged(cvMetrics)
             romInfo['Converged'] = converged
             if converged:
