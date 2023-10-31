@@ -24,7 +24,10 @@ import threading
 from ..utils import importerUtils as im
 ## TODO: REMOVE WHEN RAY AVAILABLE FOR WINDOWOS
 if im.isLibAvail("ray"):
-  import ray
+  try:
+    import ray
+  except ModuleNotFoundError:
+    print("Failed to import ray in RayRunner.py")
 else:
   import inspect
 #External Modules End--------------------------------------------------------------------------------

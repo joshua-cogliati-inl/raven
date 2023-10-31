@@ -657,6 +657,8 @@ def find_crow(framework_dir):
   """
   try:
     import crow_modules.distribution1D
+    import crow_modules.randomENG
+    import crow_modules.interpolationND
     return
   except:
     ravenDir = os.path.dirname(framework_dir)

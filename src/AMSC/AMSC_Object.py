@@ -55,7 +55,7 @@ except ImportError as e:
   sys.stderr.write('It appears you do not have the AMSC library. Try '
                    + 'running the following command:' + os.linesep
                    + '\tmake -f ' + makeFilePath + os.linesep)
-  sys.exit(1)
+  raise e
 ################################################################################
 
 

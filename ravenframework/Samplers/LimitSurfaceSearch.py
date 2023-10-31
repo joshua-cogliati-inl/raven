@@ -27,7 +27,10 @@ from scipy import spatial
 from math import ceil
 
 from .. import Distributions
-from AMSC.AMSC_Object import AMSC_Object
+try:
+  from AMSC.AMSC_Object import AMSC_Object
+except:
+  print("failed to load AMSC_Object in LimitSurfaceSearch")
 from ..utils import randomUtils
 from ..utils import InputData, InputTypes
 from .AdaptiveSampler import AdaptiveSampler

@@ -39,7 +39,10 @@ if _daskAvail:
   import dask
   import dask.distributed
 if _rayAvail:
-  import ray
+  try:
+    import ray
+  except ModuleNotFoundError:
+    print("failed to import ray in JobHandler")
 
 # end internal parallel module
 # Internal Modules End-----------------------------------------------------------
