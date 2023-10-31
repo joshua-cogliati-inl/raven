@@ -13,13 +13,14 @@
 # limitations under the License.
 #from distutils.core import setup, Extension
 #from distutils.command.build import build
-from distutils.core import Extension
+import setuptools
+from setuptools import Extension
+from setuptools.command.build_py import build_py
 from cx_Freeze import setup, Executable
-from distutils.command.build import build
 from cx_Freeze.command import build_exe
 import os
 import sys
-import setuptools
+
 
 # Replicating the methods used in the RAVEN Makefile to find CROW_DIR,
 # If the Makefile changes to be more robust, so should this
@@ -35,11 +36,10 @@ UTIL_INCLUDE_DIR = os.path.join(CROW_DIR,'include', 'utilities')
 
 # We need a custom build order in order to ensure that amsc.py is available
 # before we try to copy it to the target location
-class CustomBuild(build):
-    sub_commands = [('build_ext', build.has_ext_modules),
-                    ('build_py', build.has_pure_modules),
-                    ('build_clib', build.has_c_libraries),
-                    ('build_scripts', build.has_scripts)]
+class CustomBuild(build_py):
+    def run(self):
+        self.run_command('build_ext')
+        super().run()
 
 
 build_exe_options = {
@@ -95,6 +95,6 @@ setup(name='raven_framework',
                     include_dirs=include_dirs, swig_opts=swig_opts,extra_compile_args=extra_compile_args)],
       py_modules=['AMSC.amsc','crow_modules.distribution1D','crow_modules.randomENG','crow_modules.interpolationND', 'AMSC.AMSC_Object'],
       packages=['ravenframework.'+x for x in setuptools.find_packages('ravenframework')]+['ravenframework'],
-      cmdclass={'build': CustomBuild},
+      cmdclass={'build_py': CustomBuild},
       executables=[Executable("raven_framework.py")],
       options={"build_exe": build_exe_options},)
