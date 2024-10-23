@@ -39,7 +39,7 @@ class SlurmSimulationMode(Simulation.SimulationMode):
     super().__init__(*args)
     #figure out if we are in Slurm
     self.__inSlurm = "SLURM_JOB_ID" in os.environ
-    self.__nodefile = False
+    self.__nodeFile = False
     self.__coresNeeded = None #If not none, use this instead of calculating it
     self.__memNeeded = None #If not none, use this for mem=
     self.__partition = None #If not none, use this for partition=
@@ -57,21 +57,21 @@ class SlurmSimulationMode(Simulation.SimulationMode):
     newRunInfo = {}
     newRunInfo['batchSize'] = runInfoDict['batchSize']
     workingDir = runInfoDict['WorkingDir']
-    if self.__nodefile or self.__inSlurm:
-      if not self.__nodefile:
+    if self.__nodeFile or self.__inSlurm:
+      if not self.__nodeFile:
         nodeFile = os.path.join(workingDir,"slurmNodeFile_"+str(os.getpid()))
         #generate nodeFile
         os.system("srun --overlap -- hostname > "+nodeFile)
       else:
-        nodefile = self.__nodefile
-      self.raiseADebug('Setting up remote nodes based on "{}"'.format(nodefile))
-      lines = open(nodefile,"r").readlines()
+        nodeFile = self.__nodeFile
+      self.raiseADebug('Setting up remote nodes based on "{}"'.format(nodeFile))
+      lines = open(nodeFile,"r").readlines()
       #XXX This is an undocumented way to pass information back
       newRunInfo['Nodes'] = list(lines)
       numMPI = runInfoDict['NumMPI']
       oldBatchsize = runInfoDict['batchSize']
       #the batchsize is just the number of nodes of which there is one
-      # per line in the nodefile divided by the numMPI (which is per run)
+      # per line in the nodeFile divided by the numMPI (which is per run)
       # and the floor and int and max make sure that the numbers are reasonable
       maxBatchsize = max(int(math.floor(len(lines) / numMPI)), 1)
 
@@ -92,7 +92,7 @@ class SlurmSimulationMode(Simulation.SimulationMode):
         nodeCommand = runInfoDict["NodeParameter"]+" %BASE_WORKING_DIR%/node_%INDEX% "
       else:
         #If only one batch just use original node file
-        nodeCommand = runInfoDict["NodeParameter"]+" "+nodefile
+        nodeCommand = runInfoDict["NodeParameter"]+" "+nodeFile
 
     else:
       #Not in PBS, so can't look at PBS_NODEFILE and none supplied in input
@@ -151,6 +151,10 @@ class SlurmSimulationMode(Simulation.SimulationMode):
     # Generate the sbatch command needed to run input
     ## raven_framework location
     raven = os.path.abspath(os.path.join(frameworkDir,'..','raven_framework'))
+    command_env = {}
+    command_env.update(os.environ)
+    command_env["COMMAND"] = raven + " " + " ".join(runInfoDict["SimulationFiles"])
+    command_env["RAVEN_FRAMEWORK_DIR"] = frameworkDir
     ## generate the command, which will be passed into "args" of subprocess.call
     command = ["sbatch","--job-name="+jobName]+\
               runInfoDict["clusterParameters"]+\
@@ -159,9 +163,7 @@ class SlurmSimulationMode(Simulation.SimulationMode):
                ([memString] if memString is not None else [])+\
                (["--partition="+self.__partition] if self.__partition is not None else [])+\
               ["--time="+runInfoDict["expectedTime"],
-               '--export=ALL,COMMAND="{} '.format(raven)+
-               " ".join(runInfoDict["SimulationFiles"])+'",'+
-               'RAVEN_FRAMEWORK_DIR="{}"'.format(frameworkDir),
+               '--export=ALL,COMMAND,RAVEN_FRAMEWORK_DIR',
                runInfoDict['RemoteRunCommand']]
     # Set parameters for the run command
     remoteRunCommand = {}
@@ -169,8 +171,11 @@ class SlurmSimulationMode(Simulation.SimulationMode):
     remoteRunCommand["cwd"] = runInfoDict['InputDir']
     ## command to run in that directory
     remoteRunCommand["args"] = command
-    ## print out for debugging
     print("remoteRunCommand",remoteRunCommand)
+    print("COMMAND", command_env["COMMAND"])
+    print("RAVEN_FRAMEWORK_DIR", command_env["RAVEN_FRAMEWORK_DIR"])
+    remoteRunCommand["env"] = command_env
+    ## print out for debugging
     return remoteRunCommand
 
   def remoteRunCommand(self, runInfoDict):
@@ -194,7 +199,7 @@ class SlurmSimulationMode(Simulation.SimulationMode):
     """
     for child in xmlNode:
       if child.tag == "nodefile":
-        self.__nodefile = child.text.strip()
+        self.__nodeFile = child.text.strip()
       elif child.tag == "memory":
         self.__memNeeded = child.text.strip()
       elif child.tag == "coresneeded":
