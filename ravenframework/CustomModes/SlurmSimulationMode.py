@@ -40,6 +40,11 @@ class SlurmSimulationMode(Simulation.SimulationMode):
     #figure out if we are in Slurm
     self.__inSlurm = "SLURM_JOB_ID" in os.environ
     self.__nodefile = False
+    self.__coresNeeded = None #If not none, use this instead of calculating it
+    self.__memNeeded = None #If not none, use this for mem=
+    self.__partition = None #If not none, use this for partition=
+    self.__mpiparams = [] #Paramaters to give to mpi
+    self.__createPrecommand = True #If true, do create precommand.
     self.printTag = 'SLURM SIMULATION MODE'
 
   def modifyInfo(self, runInfoDict):
@@ -50,6 +55,7 @@ class SlurmSimulationMode(Simulation.SimulationMode):
       @ Out, newRunInfo, dict, of modified values
     """
     newRunInfo = {}
+    newRunInfo['batchSize'] = runInfoDict['batchSize']
     workingDir = runInfoDict['WorkingDir']
     if self.__nodefile or self.__inSlurm:
       if not self.__nodefile:
@@ -148,11 +154,11 @@ class SlurmSimulationMode(Simulation.SimulationMode):
     ## generate the command, which will be passed into "args" of subprocess.call
     command = ["sbatch","--job-name="+jobName]+\
               runInfoDict["clusterParameters"]+\
-              ["--ntasks=="+str(coresNeeded),
+              ["--ntasks="+str(coresNeeded),
                "--cpus-per-task="+str(ncpus)]+\
-               [memString] if memString is not None else []+\
+               ([memString] if memString is not None else [])+\
+               (["--partition="+self.__partition] if self.__partition is not None else [])+\
               ["--time="+runInfoDict["expectedTime"],
-               "--partition="+self.__partition,
                '--export=ALL,COMMAND="{} '.format(raven)+
                " ".join(runInfoDict["SimulationFiles"])+'",'+
                'RAVEN_FRAMEWORK_DIR="{}"'.format(frameworkDir),
