@@ -1,6 +1,6 @@
 [Tests]
  [./ROM]
-   input = 'rom.xml qsub_extra.xml ../pbspro_mpi.xml ../cluster_runinfo.xml'
+   input = 'rom.xml ../plain_qsub.xml ../pbspro_mpi.xml ../cluster_runinfo.xml'
    output = 'Rom/testPointSet_dump.csv Rom/testPrintHistorySet_dump_0.csv Rom/testPrintHistorySet_dump_14.csv Rom/testPrintHistorySet_dump.csv'
    run_types = 'qsub'
    output_wait_time = 60
