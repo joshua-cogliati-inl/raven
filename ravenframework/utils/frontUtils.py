@@ -164,4 +164,5 @@ def crowdingDistance(rank, popSize, fitness):
           nextObjValue = fitness[sortedFront[i + 1], obj]
           prevObjValue = fitness[sortedFront[i - 1], obj]
           crowdDist[sortedFront[i]] += (nextObjValue - prevObjValue) / (fMax - fMin)
+  print(f"{rank=}\n{fitness=}\n{crowdDist=}")
   return crowdDist
