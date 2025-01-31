@@ -45,7 +45,7 @@ def singleObjSurvivorSelect(self, info, rlz, traj, offSprings, offSpringFitness,
                                                                     variables=list(self.toBeSampled),
                                                                     population=self.population,
                                                                     fitness=self.fitness,
-                                                                    objVar = self._objectiveVar[0],
+                                                                    objVar=self._objectiveVar[0],
                                                                     newRlz=rlz,
                                                                     offSpringsFitness=offSpringFitness,
                                                                     popObjectiveVal=self.objectiveVal)
@@ -53,8 +53,9 @@ def singleObjSurvivorSelect(self, info, rlz, traj, offSprings, offSpringFitness,
     self.population = offSprings
     self.fitness = offSpringFitness
     self.objectiveVal = rlz[self._objectiveVar[0]].data
+    self.popAge = [0] * self._populationSize
 
-def multiObjSurvivorSelect(self, info, rlz, traj, offSprings, offSpringFitness, objectiveVal, g):
+def multiObjSurvivorSelect(self, info, rlz, traj, offSprings, offSpringFitness, objectiveVal, g, rank=None):
   """
     process of selecting survivors for multi-objective problems
     @ In, info, dict, dictionary of information
@@ -74,35 +75,13 @@ def multiObjSurvivorSelect(self, info, rlz, traj, offSprings, offSpringFitness, 
                                                                          offsprings=rlz,
                                                                          popObjectiveVal=self.objectiveVal,
                                                                          offObjectiveVal=objectiveVal,
-                                                                         popFit = self.fitness,
-                                                                         offFit = offSpringFitness,
-                                                                         popConstV = self.constraintsV,
+                                                                         popFit=self.fitness,
+                                                                         offFit=offSpringFitness,
+                                                                         popConstV=self.constraintsV,
                                                                          direction=self._minMax,
-                                                                         offConstV = g)
+                                                                         offConstV=g)
   else:
     self.population = offSprings
     self.fitness = offSpringFitness
     self.constraintsV = g
-    # offspringObjsVals for Rank and CD calculation
-    fitVal = datasetToDataArray(self.fitness, self._objectiveVar).data
-    offspringFitVals = fitVal.tolist()
-    offSpringRank = frontUtils.rankNonDominatedFrontiers(np.array(offspringFitVals), isFitness=True)
-    self.rank     = xr.DataArray(offSpringRank,
-                                 dims=['rank'],
-                                 coords={'rank': np.arange(np.shape(offSpringRank)[0])})
-    offSpringCD           = frontUtils.crowdingDistance(rank=offSpringRank,
-                                                        popSize=len(offSpringRank),
-                                                        fitness=np.array(offspringFitVals))
-    self.crowdingDistance = xr.DataArray(offSpringCD,
-                                         dims=['CrowdingDistance'],
-                                         coords={'CrowdingDistance': np.arange(np.shape(offSpringCD)[0])})
-    self.objectiveVal = []
-    for i in range(len(self._objectiveVar)):
-      self.objectiveVal.append(list(np.atleast_1d(rlz[self._objectiveVar[i]].data)))
-  self._collectOptPointMulti(self.population,
-                             self.rank,
-                             self.crowdingDistance,
-                             self.objectiveVal,
-                             self.fitness,
-                             self.constraintsV)
-  self._resolveNewGenerationMulti(traj, rlz, info)
+    self.popAge = [0] * self._populationSize

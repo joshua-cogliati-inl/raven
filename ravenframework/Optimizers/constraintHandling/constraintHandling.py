@@ -22,7 +22,7 @@ import xarray as xr
 import numpy as np
 from ..GeneticAlgorithm import datasetToDataArray
 
-def constraintHandling(self, info, rlz, multiObjective=False):
+def constraintHandling(self, rlz, offSprings, objectiveVal, multiObjective=False):
     """
     This function handles the constraints for both single and multi-objective optimization.
     @ In, info, dict, dictionary containing information about the run
@@ -30,17 +30,6 @@ def constraintHandling(self, info, rlz, multiObjective=False):
     @ In, multiObjective, bool, indicates if it's a multi-objective optimization
     @ Out, None
     """
-    traj = info['traj']
-    offSprings = datasetToDataArray(rlz, list(self.toBeSampled))
-
-    # Handle objective values differently for single and multi-objective cases
-    if multiObjective:
-        objectiveVal = []
-        for i in range(len(self._objectiveVar)):
-            objectiveVal.append(list(np.atleast_1d(rlz[self._objectiveVar[i]].data)))
-    else:
-        objectiveVal = list(np.atleast_1d(rlz[self._objectiveVar[0]].data))
-
     # Collect parameters for constraint functions (excluding default params)
     constraintData = {}
     if self._constraintFunctions or self._impConstraintFunctions:
@@ -79,20 +68,4 @@ def constraintHandling(self, info, rlz, multiObjective=False):
                 g.data[index, constIndex] = self._handleExplicitConstraints(newOpt, constraint)
             else:
                 g.data[index, constIndex] = self._handleImplicitConstraints(newOpt, opt, constraint)
-
-    # Compute fitness for the offspring
-    offSpringFitness = self._fitnessInstance(rlz,
-                                             objVar=self._objectiveVar,
-                                             a=self._objCoeff,
-                                             b=self._penaltyCoeff,
-                                             penalty=None,
-                                             constraintFunction=g,
-                                             constraintNum=self._numOfConst,
-                                             type=self._minMax)
-
-    # Single-objective post-processing (if needed)
-    if not multiObjective:
-        self._collectOptPoint(rlz, offSpringFitness, objectiveVal, g)
-        self._resolveNewGeneration(traj, rlz, objectiveVal, offSpringFitness, g, info)
-
-    return g, objectiveVal, offSprings, offSpringFitness
+    return g

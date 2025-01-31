@@ -101,7 +101,7 @@ def fitnessBased(newRlz,**kwargs):
     @ Out, newAge, list, Ages of each chromosome in the new population.
   """
   popSize = np.shape(kwargs['population'])[0]
-  if ('age' not in kwargs.keys() or kwargs['age'] == None):
+  if 'age' not in kwargs.keys() or kwargs['age'] is None:
     popAge = [0] * popSize
   else:
     popAge = kwargs['age']
@@ -114,27 +114,54 @@ def fitnessBased(newRlz,**kwargs):
   popFitness = np.array([item for sublist in popFitness for item in sublist])
   newPopulation = population
   newFitness = popFitness
-  newAge = list(map(lambda x:x+1, popAge))
-  newPopulationMerged = np.concatenate([newPopulation,offSprings])
-  newFitness = np.concatenate([newFitness,offSpringsFitness])
-  newAge.extend([0]*len(offSpringsFitness))
+  newAge = list(map(lambda x: x + 1, popAge))
+  newPopulationMerged = np.concatenate([newPopulation, offSprings])
+  newFitness = np.concatenate([newFitness, offSpringsFitness])
+  newAge.extend([0] * len(offSpringsFitness))
 
-  # sort population, popFitness according to age
-  sortedFitness,sortedAge,sortedPopulation = zip(*[(x,y,z) for x,y,z in sorted(zip(newFitness,newAge,newPopulationMerged),reverse=True,key=lambda x: (x[0], -x[1]))])
-  sortedFitnessT,sortedAgeT,sortedPopulationT = np.atleast_1d(list(sortedFitness)),list(sortedAge),np.atleast_1d(list(sortedPopulation))
-  newPopulationSorted = sortedPopulationT[:-len(offSprings)]
-  newFitness = sortedFitnessT[:-len(offSprings)]
-  newAge = sortedAgeT[:-len(offSprings)]
+  # Create a dictionary to track the maximum age of each individual
+  unique_individuals = {}
+  for i, ind in enumerate(newPopulationMerged):
+    ind_tuple = tuple(ind)  # Convert the individual to a tuple to use as a dictionary key
+    if ind_tuple in unique_individuals:
+      unique_individuals[ind_tuple] = max(unique_individuals[ind_tuple], newAge[i])
+    else:
+      unique_individuals[ind_tuple] = newAge[i]
+
+  # Create new lists for population, fitness, and age based on unique individuals
+  unique_population = []
+  unique_fitness = []
+  unique_age = []
+  seen = set()
+  for i, ind in enumerate(newPopulationMerged):
+    ind_tuple = tuple(ind)
+    if ind_tuple not in seen:
+      seen.add(ind_tuple)
+      unique_population.append(ind)
+      unique_fitness.append(newFitness[i])
+      unique_age.append(unique_individuals[ind_tuple])
+
+  # Sort the unique population based on fitness and age
+  sorted_fitness, sorted_age, sorted_population = zip(*[(x, y, z) for x, y, z in sorted(
+    zip(unique_fitness, unique_age, unique_population), reverse=True, key=lambda x: (x[0], -x[1]))])
+  sorted_fitness = np.atleast_1d(list(sorted_fitness))
+  sorted_age = list(sorted_age)
+  sorted_population = np.atleast_1d(list(sorted_population))
+
+  newPopulationSorted = sorted_population[:popSize]
+  newFitness = sorted_fitness[:popSize]
+  newAge = sorted_age[:popSize]
 
   newPopulationArray = xr.DataArray(newPopulationSorted,
-                                    dims=['chromosome','Gene'],
-                                    coords={'chromosome':np.arange(np.shape(newPopulationSorted)[0]),
+                                    dims=['chromosome', 'Gene'],
+                                    coords={'chromosome': np.arange(np.shape(newPopulationSorted)[0]),
                                             'Gene': kwargs['variables']})
   newFitnessDS = xr.Dataset()
   newFitnessDS[kwargs['objVar']] = xr.DataArray(newFitness,
-                            dims=['chromosome'],
-                            coords={'chromosome':np.arange(np.shape(newFitness)[0])})
-  return newPopulationArray,newFitnessDS,newAge,kwargs['popObjectiveVal']
+                                                dims=['chromosome'],
+                                                coords={'chromosome': np.arange(np.shape(newFitness)[0])})
+  return newPopulationArray, newFitnessDS, newAge, kwargs['popObjectiveVal']
+
 
 # @profile
 def rankNcrowdingBased(offsprings, **kwargs):
