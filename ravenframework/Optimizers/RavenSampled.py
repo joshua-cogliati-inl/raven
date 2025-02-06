@@ -410,6 +410,16 @@ class RavenSampled(Optimizer):
           self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
           self._finals.append(bestPoint)
 
+    bestSampledKey = None
+    if hasattr(self,"_sampledPopulationInfo"):
+      for key in self._sampledPopulationInfo:
+        value = self._sampledPopulationInfo[key]
+        if bestSampledKey is None or np.any(value > bestSampledValue):
+          bestSampledKey = key
+          bestSampledValue = value
+      bestSampledKeyAlt = tuple(bestPoint[x] for x in self.toBeSampled.keys())
+      print(f"Choosen: {bestPoint=} {self._sampledPopulationInfo.get(bestSampledKeyAlt,None)}\n\nFrom Database {bestSampledKey} {bestSampledValue}")
+
   def flush(self):
     """
       Reset Optimizer attributes to allow rerunning a workflow
