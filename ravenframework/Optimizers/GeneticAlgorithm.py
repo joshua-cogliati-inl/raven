@@ -348,6 +348,7 @@ class GeneticAlgorithm(RavenSampled):
     self._fitnessInstance = None                                 # instance of fitness
     self._repairInstance = None                                  # instance of repair
     self._canHandleMultiObjective = True                         # boolean indicator whether optimization is a sinlge-objective problem or a multi-objective problem
+    self._removeRepeats = False                                  # If true, remove children that are repeats of the parent
     self._finals = []                                            # A list of unique final points
 
   ##########################
@@ -501,6 +502,11 @@ class GeneticAlgorithm(RavenSampled):
                     proceed to the next generation. It suppoort only multi-objective optimization problem.
                   \end{itemize}""")
     GAparams.addSub(survivorSelection)
+
+    # Remove repeat
+    removeRepeats = InputData.parameterInputFactory('removeRepeats', strictMode=True,
+                                                    descr="If this is included, remove children that are repeated")
+    GAparams.addSub(removeRepeats)
 
     # Fitness
     fitness = InputData.parameterInputFactory('fitness', strictMode=True,
@@ -717,6 +723,9 @@ class GeneticAlgorithm(RavenSampled):
       self.raiseADebug('No persistence given; setting to 1.')
       self._requiredPersistence = 1
 
+    if gaParamsNode.findFirst('removeRepeats') is not None:
+      self._removeRepeats = True
+
   def initialize(self, externalSeeding=None, solutionExport=None):
     """
       This function should be called every time a clean optimizer is needed. Called before takeAstep in <Step>
@@ -887,26 +896,30 @@ class GeneticAlgorithm(RavenSampled):
       else:
         children = childrenMutated
 
-      # # Make sure no children are exactly similar to parents
-      # flag = True
-      # counter = 0
-      # while flag and counter < self._populationSize:
-      #   counter += 1
-      #   repeated =[]
-      #   for i in range(np.shape(self.population.data)[0]):
-      #     for j in range(i,np.shape(children.data)[0]):
-      #       if all(self.population.data[i,:]==children.data[j,:]):
-      #         repeated.append(j)
-      #         repeated = list(set(repeated))
-      #         if repeated:
-      #           newChildren = self._mutationInstance(offSprings=children[repeated,:],
-      #                                                distDict=self.distDict,
-      #                                                locs=self._mutationLocs,
-      #                                                mutationProb=self._mutationProb,
-      #                                                variables=list(self.toBeSampled))
-      #           children.data[repeated,:] = newChildren.data
-      #         else:
-      #           flag = False
+      # Make sure no children are exactly similar to parents
+      foundRepeats = self._removeRepeats
+      counter = 0
+      print(f"{children=}")
+      children_copy = children.copy()
+      while foundRepeats and counter < self._populationSize:
+        counter += 1
+        foundRepeats = False
+        for i in range(np.shape(self.population.data)[0]):
+          repeated =[]
+          for j in range(i,np.shape(children.data)[0]):
+            if all(self.population.data[i,:]==children.data[j,:]):
+              repeated.append(j)
+              repeated = list(set(repeated))
+          if repeated:
+            print(f"{repeated=}")
+            newChildren = self._mutationInstance(offSprings=children[repeated,:],
+                                                 distDict=self.distDict,
+                                                 locs=self._mutationLocs,
+                                                 mutationProb=self._mutationProb,
+                                                 variables=list(self.toBeSampled))
+            children.data[repeated,:] = newChildren.data
+            foundRepeats = True
+      #breakpoint()
       # keeping the population size constant by ignoring the excessive children
       children = children[:self._populationSize, :]
       daChildren = xr.DataArray(children,
