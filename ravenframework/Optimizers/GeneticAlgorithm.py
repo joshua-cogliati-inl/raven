@@ -761,8 +761,10 @@ class GeneticAlgorithm(RavenSampled):
     self.raiseADebug(f"{allDiscrete=} {discreteCombinations=} {unknownDiscrete=}")
 
     if allDiscrete and self._populationSize > discreteCombinations:
-      if unknownDiscrete:
-        self.raiseAWarning(f"Possible population size {self._populationSize} greater than possible combinations {discreteCombinations}")
+      if unknownDiscrete or len(self.toBeSampled) != len(self.distDict):
+        #If either of the above are true, the calculation of the
+        # number of combinations might be wrong, so just warn.
+        self.raiseAWarning(f"It is possible that the population size {self._populationSize} is greater than possible combinations {discreteCombinations}")
       else:
         self.raiseAnError(IOError, f"Population size {self._populationSize} is greater than possible combinations {discreteCombinations}")
 
