@@ -271,6 +271,7 @@ from .survivorSelection import survivorSelection as survivorSelectionProcess
 from .constraintHandling.constraintHandling import constraintHandling
 from .fitness.fitness import returnInstance as fitnessReturnInstance
 from .repairOperators.repair import returnInstance as repairReturnInstance
+from .. import Distributions
 # Internal Modules End------------------------------------------------------------------------------
 
 class GeneticAlgorithm(RavenSampled):
@@ -742,6 +743,29 @@ class GeneticAlgorithm(RavenSampled):
       self.raiseAnError(IOError, f'Number of initial values provided for each variable is {len(self._initialValues)}, while the population size is {self._populationSize}')
     for _, init in enumerate(self._initialValues):
       self._submitRun(init, 0, self.getIteration(0) + 1)
+
+    allDiscrete = True
+    discreteCombinations = 1
+    unknownDiscrete = False
+    for value in self.distDict.values():
+      if value.distType != Distributions.distType.discrete:
+        allDiscrete = False
+      elif isinstance(value,Distributions.UniformDiscrete):
+        if value.nPoints is not None:
+          nPoints = value.nPoints
+        else:
+          nPoints = int(value.upperBound - value.lowerBound + 1)
+        discreteCombinations *= nPoints
+      else:
+        unknownDiscrete
+    self.raiseADebug(f"{allDiscrete=} {discreteCombinations=} {unknownDiscrete=}")
+
+    if allDiscrete and self._populationSize > discreteCombinations:
+      if unknownDiscrete:
+        self.raiseAWarning(f"Possible population size {self._populationSize} greater than possible combinations {discreteCombinations}")
+      else:
+        self.raiseAnError(IOError, f"Population size {self._populationSize} is greater than possible combinations {discreteCombinations}")
+
 
   def initializeTrajectory(self, traj=None):
     """
