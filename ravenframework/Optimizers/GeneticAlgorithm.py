@@ -1140,9 +1140,12 @@ class GeneticAlgorithm(RavenSampled):
     if len(self._optPointHistory[traj]) < 2:
       return False
     o1, _ = self._optPointHistory[traj][-1]
+    print(f"{o1=}")
     converged = True
-    for objVar in self._objectiveVar:
-      converged = (o1[objVar] == self._convergenceCriteria['objective']) and converged
+    for i,objVar in enumerate(self._objectiveVar):
+      print(f"{objVar=}  {o1[objVar]=} {self._convergenceCriteria['objective'][i]=}")
+      converged = (o1[objVar] == self._convergenceCriteria['objective'][i]) and converged
+    breakpoint()
     return converged
 
   def _checkConvAHDp(self, traj, **kwargs):
