@@ -1141,11 +1141,22 @@ class GeneticAlgorithm(RavenSampled):
       return False
     o1, _ = self._optPointHistory[traj][-1]
     print(f"{o1=}")
-    converged = True
-    for i,objVar in enumerate(self._objectiveVar):
-      print(f"{objVar=}  {o1[objVar]=} {self._convergenceCriteria['objective'][i]=}")
-      converged = (o1[objVar] == self._convergenceCriteria['objective'][i]) and converged
-    breakpoint()
+    for j in range(len(np.atleast_1d(o1[self._objectiveVar[0]]))):
+      converged = True
+      bestObjective = []
+      for i,objVar in enumerate(self._objectiveVar):
+        print(f"{objVar=}  {np.atleast_1d(o1[objVar])[j]=} {self._convergenceCriteria['objective'][i]=}")
+        currentObj = np.atleast_1d(o1[objVar])[j]*self._objMult[objVar]
+        bestObjective.append(currentObj*self._objMult[objVar])
+        converged = (currentObj == self._convergenceCriteria['objective'][i]) and converged
+      if converged:
+        #breakpoint()
+        if self._isMultiObjective:
+          self.multiBestObjective = np.array([bestObjective])
+        else:
+          self.bestObjective = bestObjective[0]
+        return converged
+    #breakpoint()
     return converged
 
   def _checkConvAHDp(self, traj, **kwargs):
