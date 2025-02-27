@@ -425,7 +425,11 @@ class RavenSampled(Optimizer):
           bestSampledKey = key
           bestSampledValue = value
       bestSampledKeyAlt = tuple(bestPoint[x] for x in self.toBeSampled.keys())
-      print(f"Choosen: {bestPoint=} {self._sampledPopulationInfo.get(bestSampledKeyAlt,None)}\n\nFrom Database {bestSampledKey} {bestSampledValue}")
+      bestValFromPop = self._sampledPopulationInfo.get(bestSampledKeyAlt,None)
+      print(f"Choosen: {bestPoint=} {bestValFromPop=}\n\nFrom Database {bestSampledKey} {bestSampledValue}")
+      if bestValFromPop is None or not np.all(bestValFromPop == bestSampledValue):
+        import sys
+        sys.exit(-1)
 
   def flush(self):
     """
