@@ -21,6 +21,11 @@
     </revisions>
   </TestInfo>
 
+  <Files>
+    <Input name="senFOMsCSV">senFOMs.csv</Input>
+    <Input name="senMeasureablesCSV">senMeasureables.csv</Input>
+  </Files>
+
   <Models>
     <ExternalModel ModuleToLoad="../../../AnalyticModels/expLinModel.py" name="linModel" subType="">
       <inputs>p1, p2, e1, e2, e3, bE</inputs>
@@ -31,6 +36,8 @@
       <outputs>FOM1, FOM2, FOM3</outputs>
     </ExternalModel>
     <PostProcessor name="pp1" subType="Representativity">
+      <sensitivityMeasurables>senMeasureablesData</sensitivityMeasurables>
+      <sensitivityFOMs>senFOMsData</sensitivityFOMs>
       <prototypeOutputs>outputDataMC1|Output|F1, outputDataMC1|Output|F2, outputDataMC1|Output|F3</prototypeOutputs>
       <targetOutputs>outputDataMC2|Output|FOM1, outputDataMC2|Output|FOM2, outputDataMC2|Output|FOM3</targetOutputs>
       <prototypeParameters>outputDataMC1|Input|p1,outputDataMC1|Input|p2</prototypeParameters>
@@ -85,6 +92,12 @@
   </Samplers>
 
   <Steps>
+    <IOStep name="load>
+      <Input class="Files" type="">senFOMsCSV</Input>
+      <Input class="Files" type="">senMeasureablesCSV</Input>
+      <Output class="DataObjects" type="PointSet">senFOMsData</Output>
+      <Output class="DataObjects" type="PointSet">senMeasureablesData</Output>
+    </IOStep>
     <MultiRun name="mcRunExp" re-seeding="20021986">
       <Input class="DataObjects" type="PointSet">inputPlaceHolder2</Input>
       <Model class="Models" type="ExternalModel">linModel</Model>
@@ -100,6 +113,8 @@
     <PostProcess name="PP1">
       <Input class="DataObjects" type="PointSet">outputDataMC1</Input>
       <Input class="DataObjects" type="PointSet">outputDataMC2</Input>
+      <Input class="DataObjects" type="PointSet">senFOMsData</Input>
+      <Input class="DataObjects" type="PointSet">senMeasureablesData</Input>
       <Model class="Models" type="PostProcessor">pp1</Model>
       <Output class="DataObjects" type="PointSet">pp1_metric</Output>
       <Output class="OutStreams" type="Print">pp1_metric_dump</Output>
