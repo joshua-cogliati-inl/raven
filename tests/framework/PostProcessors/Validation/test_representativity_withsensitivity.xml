@@ -36,12 +36,12 @@
       <outputs>FOM1, FOM2, FOM3</outputs>
     </ExternalModel>
     <PostProcessor name="pp1" subType="Representativity">
-      <sensitivityMeasurables>senMeasureablesData</sensitivityMeasurables>
-      <sensitivityFOMs>senFOMsData</sensitivityFOMs>
       <prototypeOutputs>outputDataMC1|Output|F1, outputDataMC1|Output|F2, outputDataMC1|Output|F3</prototypeOutputs>
       <targetOutputs>outputDataMC2|Output|FOM1, outputDataMC2|Output|FOM2, outputDataMC2|Output|FOM3</targetOutputs>
       <prototypeParameters>outputDataMC1|Input|p1,outputDataMC1|Input|p2</prototypeParameters>
       <targetParameters>outputDataMC2|Input|p1,outputDataMC2|Input|p2</targetParameters>
+      <sensitivityMeasurables>senMeasureablesData</sensitivityMeasurables>
+      <sensitivityFOMs>senFOMsData</sensitivityFOMs>
     </PostProcessor>
   </Models>
 
@@ -92,7 +92,7 @@
   </Samplers>
 
   <Steps>
-    <IOStep name="load>
+    <IOStep name="load">
       <Input class="Files" type="">senFOMsCSV</Input>
       <Input class="Files" type="">senMeasureablesCSV</Input>
       <Output class="DataObjects" type="PointSet">senFOMsData</Output>
@@ -133,6 +133,14 @@
     <PointSet name="outputDataMC2">
       <Input>p1,p2</Input>
       <Output>FOM1, FOM2, FOM3</Output>
+    </PointSet>
+    <PointSet name="senFOMsData">
+      <Input>a</Input>
+      <Output>b</Output>
+    </PointSet>
+    <PointSet name="senMeasureablesData">
+      <Input>a</Input>
+      <Output>b</Output>
     </PointSet>
     <PointSet name="pp1_metric">
       <Input>InputPlaceHolder</Input>

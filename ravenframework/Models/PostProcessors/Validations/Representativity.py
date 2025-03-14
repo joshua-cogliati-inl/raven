@@ -58,6 +58,14 @@ class Representativity(ValidationBase):
                                 descr=r"""ID of the temporal variable of the target model. Default is ``time''.
         \nb Used just in case the  \xmlNode{pivotValue}-based operation  is requested (i.e., time dependent validation).""")
     specs.addSub(targetPivotParameterInput)
+    sensitivityMeasurablesInput = InputData.parameterInputFactory("sensitivityMeasurables",
+                            contentType=InputTypes.StringType,
+                            descr="ID of sensitivity measurement, if this is not provided then it is calculated.")
+    specs.addSub(sensitivityMeasurablesInput)
+    sensitivityFOMsInput = InputData.parameterInputFactory("sensitivityFOMs",
+                            contentType=InputTypes.StringType,
+                            descr="ID of sensitivity figure of merit, if this is not provided then it is calculated.")
+    specs.addSub(sensitivityFOMsInput)
     return specs
 
   def __init__(self):
@@ -74,6 +82,8 @@ class Representativity(ValidationBase):
     self.featureDataObject = None
     self.targetDataObject = None
     self.senPrefix = 'sen'
+    self.sensitivityMeasurablesID = None
+    self.sensitivityFOMsID = None
 
   def getBasicStat(self):
     """
@@ -95,7 +105,12 @@ class Representativity(ValidationBase):
       @ Out, None
     """
     super().initialize(runInfo, inputs, initDict)
-    if len(inputs) != 2:
+    extraInputs = 0
+    if self.sensitivityMeasurablesID is not None:
+      extraInputs += 1
+    if self.sensitivityFOMsID is not None:
+      extraInputs += 1
+    if len(inputs) != 2 + extraInputs:
       self.raiseAnError(IOError, "PostProcessor", self.name, "can only accept two DataObjects, but got {}!".format(str(len(inputs))))
     params = self.prototypeOutputs+self.targetOutputs+self.prototypeParameters+self.targetParameters
     validParams = [True if "|" in x  else False for x in params]
@@ -117,7 +132,7 @@ class Representativity(ValidationBase):
     for i, inp in enumerate(inputs):
       if inp.name == featDataObject:
         self.featureDataObject = (inp, i)
-      else:
+      elif inp.name == targetDataObject:
         self.targetDataObject = (inp, i)
 
     vars = self.featureDataObject[0].vars + self.featureDataObject[0].indexes
@@ -153,8 +168,14 @@ class Representativity(ValidationBase):
         self.targetParameters = child.value
       elif child.getName() == 'targetPivotParameter':
         self.targetPivotParameter = child.value
-    _, notFound = paramInput.findNodesAndExtractValues(['prototypeParameters',
+      elif child.getName() == "sensitivityMeasurables":
+        self.sensitivityMeasurablesID = child.value
+      elif child.getName() == "sensitivityFOMs":
+        self.sensitivityFOMsID = child.value
+      _, notFound = paramInput.findNodesAndExtractValues(['prototypeParameters',
                                                                'targetParameters'])
+
+
     # notFound must be empty
     assert(not notFound)
 
@@ -169,7 +190,7 @@ class Representativity(ValidationBase):
     pivotParameter = self.pivotParameter
     names=[]
     if isinstance(inputIn['Data'][0][-1], xr.Dataset):
-      names = [self.getDataSetName(inp[-1]) for inp in inputIn['Data']]
+      names = [self.getDataSetName(inp[-1]) for inp in inputIn['Data'] if inp[-1] is not None]
       if len(inputIn['Data'][0][-1].indexes) > 1 and self.pivotParameter is None:
         if 'dynamic' not in self.dynamicType: #self.model.dataType:
           self.raiseAnError(IOError, "The validation algorithm '{}' is not a dynamic model but time-dependent data has been inputted in object {}".format(self._type, inputIn['Data'][0][-1].name))
