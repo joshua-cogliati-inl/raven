@@ -365,7 +365,11 @@ class RavenSampled(Optimizer):
 
     # further check active unfinished trajectories
     # FIXME why should there be any active, unfinished trajectories when we're cleaning up sampler?
-    traj = 0 # FIXME why only 0?? what if it's other trajectories that are active and unfinished?
+    #traj = 0 # FIXME why only 0?? what if it's other trajectories that are active and unfinished?
+    if bestValue is not None:
+      traj = bestTraj
+    else:
+      traj = 0
     # sanity check: if there's no history (we never got any answers) then report rather than crash
     if len(self._optPointHistory[traj]) == 0:
       self.raiseAnError(RuntimeError, f'There is no optimization history for traj {traj}! ' +
@@ -393,10 +397,10 @@ class RavenSampled(Optimizer):
       # write final best solution to soln export
       self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
     else: #self._isMultiObjective true
+      bestTraj = traj
       for i in range(len(opt[self._objectiveVar[0]])):
         optElm = {key: opt[key][i] for key in opt}
 
-        bestTraj = traj
         bestOpt = self.denormalizeData(optElm)
         bestPoint = dict((var, bestOpt[var]) for var in self.toBeSampled)
         if bestPoint not in self._finals:
