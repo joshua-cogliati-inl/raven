@@ -380,7 +380,7 @@ class RavenSampled(Optimizer):
     if not self._isMultiObjective:
       val = opt[self._objectiveVar[0]]
       self.raiseADebug(statusTemplate.format(status='active', traj=traj, val=s * val))
-      if bestValue is None or val < bestValue:
+      if bestValue is None:
         bestValue = val
         bestTraj = traj
       bestOpt = self.denormalizeData(self._optPointHistory[bestTraj][-1][0])
