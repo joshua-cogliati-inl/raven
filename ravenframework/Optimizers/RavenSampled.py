@@ -370,6 +370,7 @@ class RavenSampled(Optimizer):
       traj = bestTraj
     else:
       traj = 0
+      bestTraj = traj
     # sanity check: if there's no history (we never got any answers) then report rather than crash
     if len(self._optPointHistory[traj]) == 0:
       self.raiseAnError(RuntimeError, f'There is no optimization history for traj {traj}! ' +
@@ -380,16 +381,13 @@ class RavenSampled(Optimizer):
     if not self._isMultiObjective:
       val = opt[self._objectiveVar[0]]
       self.raiseADebug(statusTemplate.format(status='active', traj=traj, val=s * val))
-      if bestValue is None:
-        bestValue = val
-        bestTraj = traj
       bestOpt = self.denormalizeData(self._optPointHistory[bestTraj][-1][0])
       bestPoint = dict((var, bestOpt[var]) for var in self.toBeSampled)
       self.raiseADebug('')
       self.raiseAMessage(' - Final Optimal Point:')
       finalTemplate = '    {name:^20s}  {value: 1.3e}'
       finalTemplateInt = '    {name:^20s}  {value: 3d}'
-      self.raiseAMessage(finalTemplate.format(name=self._objectiveVar[0], value=s[0] * bestValue))
+      self.raiseAMessage(finalTemplate.format(name=self._objectiveVar[0], value=s[0] * val))
       self.raiseAMessage(finalTemplateInt.format(name='trajID', value=bestTraj))
       for var, val in bestPoint.items():
         self.raiseAMessage(finalTemplate.format(name=var, value=val))
