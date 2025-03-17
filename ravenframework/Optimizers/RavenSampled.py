@@ -378,6 +378,7 @@ class RavenSampled(Optimizer):
 
     opt = self._optPointHistory[traj][-1][0]
 
+    #Note: bestTraj == traj
     if not self._isMultiObjective:
       val = opt[self._objectiveVar[0]]
       self.raiseADebug(statusTemplate.format(status='active', traj=traj, val=s * val))
@@ -395,7 +396,6 @@ class RavenSampled(Optimizer):
       # write final best solution to soln export
       self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
     else: #self._isMultiObjective true
-      bestTraj = traj
       for i in range(len(opt[self._objectiveVar[0]])):
         optElm = {key: opt[key][i] for key in opt}
 
