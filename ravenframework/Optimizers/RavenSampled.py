@@ -365,12 +365,12 @@ class RavenSampled(Optimizer):
         bestTraj = traj
         bestValue = val
 
-    # further check active unfinished trajectories
-    # FIXME why should there be any active, unfinished trajectories when we're cleaning up sampler?
-    #traj = 0 # FIXME why only 0?? what if it's other trajectories that are active and unfinished?
     if bestValue is not None:
       traj = bestTraj
     else:
+      # further check active unfinished trajectories
+      # FIXME why should there be any active, unfinished trajectories when we're cleaning up sampler?
+      # FIXME why only 0?? what if it's other trajectories that are active and unfinished?
       traj = 0
       bestTraj = traj
     # sanity check: if there's no history (we never got any answers) then report rather than crash
