@@ -2,7 +2,7 @@
 <Simulation verbosity="all">
   <RunInfo>
     <WorkingDir>RepresentativityWithSensitivity</WorkingDir>
-    <Sequence>mcRunExp, mcRunTar, PP1</Sequence>
+    <Sequence>load, mcRunExp, mcRunTar, PP1</Sequence>
     <batchSize>1</batchSize>
   </RunInfo>
 
@@ -135,12 +135,10 @@
       <Output>FOM1, FOM2, FOM3</Output>
     </PointSet>
     <PointSet name="senFOMsData">
-      <Input>a</Input>
-      <Output>b</Output>
+      <Output>a, b</Output>
     </PointSet>
     <PointSet name="senMeasureablesData">
-      <Input>a</Input>
-      <Output>b</Output>
+      <Output>a, b</Output>
     </PointSet>
     <PointSet name="pp1_metric">
       <Input>InputPlaceHolder</Input>
