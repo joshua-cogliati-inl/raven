@@ -134,6 +134,10 @@ class Representativity(ValidationBase):
         self.featureDataObject = (inp, i)
       elif inp.name == targetDataObject:
         self.targetDataObject = (inp, i)
+      elif inp.name == self.sensitivityFOMsID:
+        self.sensitivityFOMs = inp
+      elif inp.name == self.sensitivityMeasurablesID:
+        self.sensitivityMeasurables = inp
 
     vars = self.featureDataObject[0].vars + self.featureDataObject[0].indexes
     if not set(featVars).issubset(set(vars)):
@@ -249,14 +253,23 @@ class Representativity(ValidationBase):
     # Outputs of Target model (Targets FOM_i)
     UFOMsVar = self._computeUncertaintyMatrixInErrors(datasets[1],['err_' + s.split("|")[-1] for s in self.targetOutputs])
     # # 6. Compute Normalized Uncertainties
-    # In mock experiment outputs (measurables)
-    sens = self.stat[self.featureDataObject[-1]].run({"Data":[[None, None, datasets[self.featureDataObject[-1]]]]})
-    # normalize sensitivities
-    senMeasurables = self._generateSensitivityMatrix(self.prototypeOutputs, self.prototypeParameters, sens, datasets[0])
+    if self.sensitivityMeasurablesID is None:
+      # In mock experiment outputs (measurables)
+      sens = self.stat[self.featureDataObject[-1]].run({"Data":[[None, None, datasets[self.featureDataObject[-1]]]]})
+      # normalize sensitivities
+      senMeasurables = self._generateSensitivityMatrix(self.prototypeOutputs, self.prototypeParameters, sens, datasets[0])
+    else:
+      senMeasurables = self.sensitivityMeasurables.asDataset().to_array().values.T
     # In target outputs (FOMs)
-    sens = self.stat[self.targetDataObject[-1]].run({"Data":[[None, None, datasets[self.targetDataObject[-1]]]]})
-    # normalize sensitivities
-    senFOMs = self._generateSensitivityMatrix(self.targetOutputs, self.targetParameters, sens, datasets[1])
+    if self.sensitivityFOMsID is None:
+      sens = self.stat[self.targetDataObject[-1]].run({"Data":[[None, None, datasets[self.targetDataObject[-1]]]]})
+      # normalize sensitivities
+      senFOMs = self._generateSensitivityMatrix(self.targetOutputs, self.targetParameters, sens, datasets[1])
+    else:
+      #XXX should we grab specific columns? (ditto for senMeasurables)
+      # columns = ['a','b']
+      # senFOMs = self.sensitivityFOMs.asDataset()[columns].to_array().values.T
+      senFOMs = self.sensitivityFOMs.asDataset().to_array().values.T
     # # 7. Compute representativities
     r,rExact = self._calculateBiasFactor(senMeasurables, senFOMs, UparVar, UMeasurablesVar)
     # # 8. Compute corrected Uncertainties
