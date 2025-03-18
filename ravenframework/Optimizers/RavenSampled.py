@@ -381,37 +381,29 @@ class RavenSampled(Optimizer):
     opt = self._optPointHistory[traj][-1][0]
 
     #Note: bestTraj == traj
-    if not self._isMultiObjective:
-      for i in range(len(np.atleast_1d(opt[self._objectiveVar[0]]))):
-        optElm = {key: np.atleast_1d(opt[key])[i] for key in opt}
-        val = optElm[self._objectiveVar[0]]
-      self.raiseADebug(statusTemplate.format(status='active', traj=traj, val=s * val))
-      bestOpt = self.denormalizeData(self._optPointHistory[bestTraj][-1][0])
+    for i in range(len(np.atleast_1d(opt[self._objectiveVar[0]]))):
+      optElm = {key: np.atleast_1d(opt[key])[i] for key in opt}
+      bestOpt = self.denormalizeData(optElm)
       bestPoint = dict((var, bestOpt[var]) for var in self.toBeSampled)
-      self.raiseADebug('')
-      self.raiseAMessage(' - Final Optimal Point:')
-      finalTemplate = '    {name:^20s}  {value: 1.3e}'
-      finalTemplateInt = '    {name:^20s}  {value: 3d}'
-      self.raiseAMessage(finalTemplate.format(name=self._objectiveVar[0], value=s[0] * val))
-      self.raiseAMessage(finalTemplateInt.format(name='trajID', value=bestTraj))
-      for var, val in bestPoint.items():
-        self.raiseAMessage(finalTemplate.format(name=var, value=val))
-      self.raiseAMessage('*' * 80)
+
+      if not self._isMultiObjective:
+
+        val = optElm[self._objectiveVar[0]]
+        self.raiseADebug(statusTemplate.format(status='active', traj=traj, val=s * val))
+        self.raiseADebug('')
+        self.raiseAMessage(' - Final Optimal Point:')
+        finalTemplate = '    {name:^20s}  {value: 1.3e}'
+        finalTemplateInt = '    {name:^20s}  {value: 3d}'
+        self.raiseAMessage(finalTemplate.format(name=self._objectiveVar[0], value=s[0] * val))
+        self.raiseAMessage(finalTemplateInt.format(name='trajID', value=bestTraj))
+        for var, val in bestPoint.items():
+          self.raiseAMessage(finalTemplate.format(name=var, value=val))
+        self.raiseAMessage('*' * 80)
       # write final best solution to soln export
       if bestPoint not in self._finals:
           self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
           self._finals.append(bestPoint)
 
-      #self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
-    else: #self._isMultiObjective true
-      for i in range(len(opt[self._objectiveVar[0]])):
-        optElm = {key: opt[key][i] for key in opt}
-
-        bestOpt = self.denormalizeData(optElm)
-        bestPoint = dict((var, bestOpt[var]) for var in self.toBeSampled)
-        if bestPoint not in self._finals:
-          self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
-          self._finals.append(bestPoint)
 
   def flush(self):
     """
