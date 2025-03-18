@@ -128,6 +128,8 @@ class RavenSampled(Optimizer):
     # additional methods
     # # register adaptive sample identification criteria
     self.registerIdentifier('step')  # the step within the action
+    self._finals = []                # A list of unique final points
+
 
   def handleInput(self, paramInput):
     """
@@ -380,7 +382,9 @@ class RavenSampled(Optimizer):
 
     #Note: bestTraj == traj
     if not self._isMultiObjective:
-      val = opt[self._objectiveVar[0]]
+      for i in range(len(np.atleast_1d(opt[self._objectiveVar[0]]))):
+        optElm = {key: np.atleast_1d(opt[key])[i] for key in opt}
+        val = optElm[self._objectiveVar[0]]
       self.raiseADebug(statusTemplate.format(status='active', traj=traj, val=s * val))
       bestOpt = self.denormalizeData(self._optPointHistory[bestTraj][-1][0])
       bestPoint = dict((var, bestOpt[var]) for var in self.toBeSampled)
@@ -394,7 +398,11 @@ class RavenSampled(Optimizer):
         self.raiseAMessage(finalTemplate.format(name=var, value=val))
       self.raiseAMessage('*' * 80)
       # write final best solution to soln export
-      self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
+      if bestPoint not in self._finals:
+          self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
+          self._finals.append(bestPoint)
+
+      #self._updateSolutionExport(bestTraj, self.normalizeData(bestOpt), 'final', 'None')
     else: #self._isMultiObjective true
       for i in range(len(opt[self._objectiveVar[0]])):
         optElm = {key: opt[key][i] for key in opt}
