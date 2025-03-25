@@ -266,7 +266,7 @@ class Representativity(ValidationBase):
       # normalize sensitivities
       senFOMs = self._generateSensitivityMatrix(self.targetOutputs, self.targetParameters, sens, datasets[1])
     else:
-      #XXX should we grab specific columns? (ditto for senMeasurables)
+      #Hm, should we grab specific columns? (ditto for senMeasurables)
       # columns = ['a','b']
       # senFOMs = self.sensitivityFOMs.asDataset()[columns].to_array().values.T
       senFOMs = self.sensitivityFOMs.asDataset().to_array().values.T
