@@ -111,7 +111,7 @@ class Representativity(ValidationBase):
     if self.sensitivityFOMsID is not None:
       extraInputs += 1
     if len(inputs) != 2 + extraInputs:
-      self.raiseAnError(IOError, "PostProcessor", self.name, "can only accept two DataObjects, but got {}!".format(str(len(inputs))))
+      self.raiseAWarning("PostProcessor", self.name, "can only accept two DataObjects, but got {}!".format(str(len(inputs))))
     params = self.prototypeOutputs+self.targetOutputs+self.prototypeParameters+self.targetParameters
     validParams = [True if "|" in x  else False for x in params]
     if not all(validParams):

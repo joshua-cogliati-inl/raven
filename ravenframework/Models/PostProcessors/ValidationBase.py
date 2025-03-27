@@ -132,8 +132,8 @@ class ValidationBase(PostProcessorReadyInterface):
         self.targetOutputs = child.value
     if 'static' not in self.dataType and self.pivotParameter is None:
       self.raiseAnError(IOError, "The validation algorithm '{}' is a dynamic model ONLY but no <pivotParameter> node has been inputted".format(self._type))
-    if not self.prototypeOutputs:
-      self.raiseAnError(IOError, "XML node 'prototypeOutputs' is required but not provided")
+    #if not self.prototypeOutputs:
+    #  self.raiseAnError(IOError, "XML node 'prototypeOutputs' is required but not provided")
 
   def initialize(self, runInfo, inputs, initDict):
     """
@@ -150,7 +150,7 @@ class ValidationBase(PostProcessorReadyInterface):
       metrics = [metric[3] for metric in self.assemblerDict['Metric']]
       self.metrics = [MetricDistributor.factory.returnInstance('MetricDistributor', metric) for metric in metrics]
 
-    if len(inputs) > 1:
+    if len(inputs) > 1 and self.prototypeOutputs is not None or self.targetOutputs is not None:
       # if inputs > 1, check if the | is present to understand where to get the features and target
       notStandard = [k for k in self.prototypeOutputs + self.targetOutputs if "|" not in k]
       if notStandard:
@@ -158,16 +158,17 @@ class ValidationBase(PostProcessorReadyInterface):
     # now lets check that the variables are in the dataobjects
     if isinstance(inputs[0], DataObjects.DataSet):
       do = [inp.name for inp in inputs]
-      if len(inputs) > 1:
+      if len(inputs) > 1  and self.prototypeOutputs is not None or self.targetOutputs is not None:
         allFound = [feat.split("|")[0].strip() in do for feat in self.prototypeOutputs]
         allFound += [targ.split("|")[0].strip() in do for targ in self.targetOutputs]
         if not all(allFound):
           self.raiseAnError(IOError, "targetParameters and prototypeParameters are linked to DataObjects that have not been listed as inputs in the Step. Please check input!")
       # check variables
-      for indx, dobj in enumerate(do):
-        variables = [var.split("|")[-1].strip() for var in (self.prototypeOutputs + self.targetOutputs) if dobj in var]
-        if not utils.isASubset(variables,inputs[indx].getVars()):
-          self.raiseAnError(IOError, "The variables '{}' not found in input DataObjet '{}'!".format(",".join(list(set(list(inputs[indx].getVars())) - set(variables))), dobj))
+      if self.prototypeOutputs is not None or self.targetOutputs is not None:
+        for indx, dobj in enumerate(do):
+          variables = [var.split("|")[-1].strip() for var in (self.prototypeOutputs + self.targetOutputs) if dobj in var]
+          if not utils.isASubset(variables,inputs[indx].getVars()):
+            self.raiseAnError(IOError, "The variables '{}' not found in input DataObjet '{}'!".format(",".join(list(set(list(inputs[indx].getVars())) - set(variables))), dobj))
 
     if self.acceptableMetrics:
       acceptable = [True if metric.estimator.isInstanceString(self.acceptableMetrics) else False for metric in self.metrics]
