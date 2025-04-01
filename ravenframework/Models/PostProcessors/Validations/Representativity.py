@@ -141,7 +141,7 @@ class Representativity(ValidationBase):
 
     vars = self.featureDataObject[0].vars + self.featureDataObject[0].indexes
     if not set(featVars).issubset(set(vars)):
-      missing = featVars - set(vars)
+      missing = set(featVars) - set(vars)
       self.raiseAnError(IOError, "Variables {} are missing from DataObject {}".format(','.join(missing), self.featureDataObject[0].name))
     vars = self.targetDataObject[0].vars + self.targetDataObject[0].indexes
     if not set(targVars).issubset(set(vars)):
