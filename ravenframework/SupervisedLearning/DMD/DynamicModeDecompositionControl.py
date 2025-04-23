@@ -273,6 +273,21 @@ class DMDC(DMD):
     """
     data = self._modes[target].dot(self.__getTimeEvolution(target))
     return data
+
+  def __getstate__(self):
+    state = self.__dict__.copy()
+    #if 'paramInput' in state:
+    #  del state['paramInput']
+    import pickle
+    for k in state:
+      print("pickling",k,type(state[k]))
+      a = pickle.dumps(state[k], protocol=5)
+      b = pickle.dumps(state[k], protocol=5)
+      if a != b:
+        print("Inconsistent pickling of "+k)
+        c = 1/0
+    return state
+
   def __setstate__(self,state):
     """
       Initializes the DMD with the data contained in state
@@ -664,3 +679,5 @@ class DMDC(DMD):
     B = beta.dot(uTruc[n:, :].T)
     C = Y1.dot(scipy.linalg.pinv(X1))
     return A, B, C
+
+DMDC.getInputSpecification()

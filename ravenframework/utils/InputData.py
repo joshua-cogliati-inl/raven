@@ -173,7 +173,8 @@ class ParameterInput(object):
     """
 
     ## Rename the class to something understandable by a developer
-    cls.__name__ = str(name+'Spec')
+    if cls.__name__ == "ParameterInput":
+      cls.__name__ = str(name+'Spec')
     # register class name to module (necessary for pickling)
     globals()[cls.__name__] = cls
 
@@ -739,19 +740,47 @@ class ParameterInput(object):
     return msg
 
 
+_count = {}
 
-def parameterInputFactory(*paramList, **paramDict):
+def parameterInputFactory(name, *paramList, **paramDict):
   """
     Creates a new ParameterInput class with the same parameters as ParameterInput.createClass
     @ In, same parameters as ParameterInput.createClass
     @ Out, newClass, ParameterInput, the newly created class.
   """
+  """
   class newClass(ParameterInput):
-    """
+    ""
       The new class to be created by the factory
-    """
-  newClass.createClass(*paramList, **paramDict)
-  return newClass
+    ""
+    def __getstate__(self):
+      print("trying to pickle me",self)
+      state = self.__dict__.copy()
+      print("keys",list(state.keys()))
+      import pickle
+      for k in state:
+        print("pickling",k,type(state[k]))
+        a = pickle.dumps(state[k], protocol=5)
+        print("pickled")
+      return state
+  """
+  import traceback
+  tb = traceback.extract_stack()
+  count = _count.get(name,0)
+  #if name == "pivotParameter": #"DMDC":
+  #  breakpoint()
+  _count[name] = count + 1
+  uniquifier = ""
+  i = -2
+  import os
+  while tb[i].name == 'getInputSpecification':
+    uniquifier += os.path.basename(tb[i].filename[:-3])
+    i -= 1
+  newClass = type(name+'Spec'+uniquifier, (ParameterInput,), {})
+  newClass.createClass(name, *paramList, **paramDict)
+  print("CLASSMAGIC",newClass, globals()[newClass.__name__],newClass.__name__)
+  #breakpoint()
+  return newClass #type(newClass.__name__,(newClass,),{})
 
 def assemblyInputFactory(*paramList, **paramDict):
   """
