@@ -25,10 +25,11 @@ from ..utils.utils import Object
 # for internal parallel
 ## TODO: REMOVE WHEN RAY AVAILABLE FOR WINDOWOS
 _remote = None
-if im.isLibAvail("ray"):
-  from ray import remote as _remote
+#if im.isLibAvail("ray"):
+#  from ray import remote as _remote
 # end internal parallel module
 #External Modules End-----------------------------------------------------------
+_started = False
 
 class Parallel(object):
   """
@@ -53,6 +54,7 @@ class Parallel(object):
       @ In, None (it uses the _remote global variable)
       @ Out, None
     """
+    _started = True
     self.decorator = _remote
 
   def __call__(self, func):
@@ -61,12 +63,13 @@ class Parallel(object):
       @ In, func, FunctionType or Class, the function or class to decorate
       @ Out, decorated, FunctionType, or Class, the decorated function or class
     """
+    print("Parallel",self.decorator,func.__name__)
     if self.decorator is None:
       # Return the function decorated with a wrapper
       # this is basically not decarate but we keep the same
       # approach for accessing to the original underlying function
       # in case of multi-threading
-      decorated = Object()
+      decorated = func #Object()
     else:
       # decorate the function
       decorated = self.decorator(func)

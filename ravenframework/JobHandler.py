@@ -250,6 +250,9 @@ class JobHandler(BaseType):
       # than choose a library automatically.
       if _daskAvail:
         self._parallelLib = ParallelLibEnum.dask
+        from .Decorators import Parallelization
+        assert not Parallelization._started
+        Parallelization._remote = None
       elif _rayAvail:
         self._parallelLib = ParallelLibEnum.ray
       else:
@@ -726,8 +729,8 @@ class JobHandler(BaseType):
         clientQueue
       @ Out, None
     """
-    assert "original_function" in dir(functionToRun), "to parallelize a function, it must be" \
-           " decorated with RAVEN Parallel decorator"
+    #assert "original_function" in dir(functionToRun), "to parallelize a function, it must be" \
+    #       " decorated with RAVEN Parallel decorator"
     if self._server is None or forceUseThreads:
       internalJob = Runners.factory.returnInstance('SharedMemoryRunner', args,
                                                    functionToRun.original_function,
@@ -742,7 +745,7 @@ class JobHandler(BaseType):
         arguments = args
       if self._parallelLib == ParallelLibEnum.dask:
         internalJob = Runners.factory.returnInstance('DaskRunner', arguments,
-                                                     functionToRun.original_function,
+                                                     functionToRun.original_function if hasattr(functionToRun,'original_function') else functionToRun,
                                                      identifier=identifier,
                                                      metadata=metadata,
                                                      uniqueHandler=uniqueHandler,

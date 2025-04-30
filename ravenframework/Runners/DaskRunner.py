@@ -165,9 +165,9 @@ class DaskRunner(InternalRunner):
     except Exception as ae:
       #Uncomment if you need the traceback
       self.exceptionTrace = sys.exc_info()
-      #exc_type, exc_value, exc_traceback = sys.exc_info()
-      #import traceback
-      #traceback.print_exception(exc_type, exc_value, exc_traceback)
+      exc_type, exc_value, exc_traceback = sys.exc_info()
+      import traceback
+      traceback.print_exception(exc_type, exc_value, exc_traceback)
       self.raiseAWarning(self.__class__.__name__ + " job "+self.identifier+" failed with error:"+ str(ae) +" !",'ExceptedErrorInStart')
       self.returnCode = -1
 
