@@ -31,3 +31,32 @@ class KAN(SupervisedLearning):
     Class for pyKAN used for Kolmogorov-Arnold Networks
   """
 
+  @classmethod
+  def getInputSpecification(cls):
+    """
+      Method to get a reference to a class that specifies the input data for
+      class cls.
+      @ In, cls, the class for which we are retrieving the specification
+      @ Out, inputSpecification, InputData.ParameterInput, class to use for
+        specifying input of cls.
+    """
+    inputSpecification = super().getInputSpecification()
+
+    return inputSpecification
+
+  def __init__(self):
+    """
+      A constructor that will appropriately intialize a keras deep neural network object
+      @ In, None
+      @ Out, None
+    """
+    super().__init__()
+
+  def _handleInput(self, paramInput):
+    """
+      Function to handle the common parts of the model parameter input.
+      @ In, paramInput, InputData.ParameterInput, the already parsed input.
+      @ Out, None
+    """
+    super()._handleInput(paramInput)
+
