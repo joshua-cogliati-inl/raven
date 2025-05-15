@@ -15,21 +15,20 @@
   </TestInfo>
 
   <RunInfo>
-    <WorkingDir>LSTMRegression</WorkingDir>
-    <Sequence>load, train_lstm, load2, test_lstm</Sequence>
+    <WorkingDir>KAN</WorkingDir>
+    <Sequence>load, train_kan</Sequence>
     <batchSize>1</batchSize>
   </RunInfo>
 
   <Files>
-    <Input name="sine_data">sine_data.csv</Input>
-    <Input name="sine_data_prev">sine_data_prev.csv</Input>
+    <Input name="kan_data">kan_data.csv</Input>
+    <!-- <Input name="sine_data_prev">sine_data_prev.csv</Input> -->
   </Files>
 
   <Models>
-    <ROM name="lstmROM" subType="KAN">
-      <Features>prev_sum, prev_square, prev_square_sum</Features>
-      <Target>sum, square</Target>
-      <pivotParameter>index</pivotParameter>
+    <ROM name="kanrom" subType="KAN">
+      <Features>x1, x2</Features>
+      <Target>fx</Target>
       <layers>5,2</layers>
       <steps>50,prune</steps>
       <seed>42</seed>
@@ -67,20 +66,20 @@
 
   <Steps>
     <IOStep name="load">
-      <Input class="Files" type="">sine_data</Input>
-      <Output class="DataObjects" type="HistorySet">samples</Output>
+      <Input class="Files" type="">kan_data</Input>
+      <Output class="DataObjects" type="PointSet">samples</Output>
     </IOStep>
-    <IOStep name="load2">
+    <!-- <IOStep name="load2">
       <Input class="Files" type="">sine_data_prev</Input>
       <Output class="DataObjects" type="HistorySet">prev_samples</Output>
-    </IOStep>
-    <RomTrainer name="train_lstm">
-      <Input class="DataObjects" type="HistorySet">samples</Input>
-      <Output class="Models" type="ROM">lstmROM</Output>
+    </IOStep> -->
+    <RomTrainer name="train_kan">
+      <Input class="DataObjects" type="PointSet">samples</Input>
+      <Output class="Models" type="ROM">kanrom</Output>
     </RomTrainer>
     <MultiRun name="test_lstm">
       <Input class="DataObjects" type="HistorySet">prev_samples</Input>
-      <Model class="Models" type="ROM">lstmROM</Model>
+      <Model class="Models" type="ROM">kanrom</Model>
       <Sampler class="Samplers" type="CustomSampler">hs_sample</Sampler>
       <Output class="DataObjects" type="HistorySet">resampled</Output>
       <Output class="OutStreams" type="Print">out_resampled</Output>
@@ -88,13 +87,10 @@
   </Steps>
 
   <DataObjects>
-    <HistorySet name="samples">
-      <Input>a,b,c,d,e,f</Input>
-      <Output>first,second,sum,square,square_sum,prev_sum,prev_square,prev_square_sum</Output>
-      <options>
-        <pivotParameter>index</pivotParameter>
-      </options>
-    </HistorySet>
+    <PointSet name="samples">
+      <Input>x1,x2</Input>
+      <Output>fx</Output>
+    </PointSet>
     <HistorySet name="resampled">
       <Input>a,b,c,d,e,f</Input>
       <Output>sum,square,prev_sum,prev_square,prev_square_sum</Output>

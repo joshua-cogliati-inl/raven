@@ -19,6 +19,7 @@
 
 #External Modules------------------------------------------------------------------------------------
 import kan
+import torch
 #External Modules End--------------------------------------------------------------------------------
 
 
@@ -60,7 +61,7 @@ class KAN(SupervisedLearning):
       @ Out, None
     """
     super().__init__()
-    self.kan = None #Store the kan network here
+    self.model = None #Store the kan network here
     self.layers = [] #Store the number of nodes in each layer
     self.seed = None #Integer seed if not none
     self.steps = [] #List of steps to follow
@@ -126,7 +127,7 @@ class KAN(SupervisedLearning):
       @ In, None
       @ Out, params, dict,  dictionary of parameter names and initial values
     """
-    #XXX implement
+    return {"layers":self.layers,"steps":self.steps,"seed":self.seed}
 
   def _train(self,featureVals,targetVals):
     """
@@ -137,4 +138,22 @@ class KAN(SupervisedLearning):
       @ Out, targetVals, array, shape = [n_samples], an array of output target
         associated with the corresponding points in featureVals
     """
-    #XXX implement
+    fullLayers = [featureVals.shape[1]]+self.layers+[targetVals.shape[1]]
+    kan.torch.set_default_dtype(kan.torch.float64)
+    device = kan.torch.device('cuda' if kan.torch.cuda.is_available() else 'cpu\
+')
+    args = {'device': device}
+    if self.seed is not None:
+      args['seed'] = self.seed
+    self.model = kan.KAN(width=fullLayers, **args)
+    #XXX do we need to move this to a device?
+    dataset = {'train_input': torch.from_numpy(featureVals), 'train_label': torch.from_numpy(targetVals)}
+    #XXX need to split the data into a test and train set
+    dataset['test_input'] = dataset['train_input']
+    dataset['test_label'] = dataset['train_label']
+    for step in self.steps:
+      if type(step) == int:
+        self.model.fit(dataset, steps=step)
+      elif step == 'prune':
+        self.model = self.model.prune()
+    #XXX implement returning data
