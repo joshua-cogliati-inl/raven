@@ -103,7 +103,12 @@ class KAN(SupervisedLearning):
       @ In, featureVals, numpy.array, 2-D for static case and 3D for time-dependent case, values of features
       @ Out, prediction, dict, predicted values
     """
-    #XXX implement
+    tensorFeatureVals = torch.tensor(featureVals) #XXX to(model.device)
+    prediction = {}
+    outcome = self.model.forward(tensorFeatureVals)
+    #XXX handle multiple targets
+    prediction[self.target[0]] = outcome.detach().numpy()
+    return prediction
 
   def __resetLocal__(self):
     """

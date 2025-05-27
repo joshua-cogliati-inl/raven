@@ -1,22 +1,23 @@
 <?xml version="1.0" ?>
 <Simulation>
   <TestInfo>
-    <name>framework/ROM/tensorflow_keras/keras_lstm_regression</name>
+    <name>framework/ROM/kan</name>
     <author>@cogljj</author>
-    <created>2021-04-13</created>
+    <created>2025-05-13</created>
     <revisions>
     </revisions>
-    <classesTested>KerasLSTMRegression</classesTested>
+    <classesTested>KAN</classesTested>
     <description>
-      Test the Keras LSTM Regression using a simple sum of sine waves.
-      The data was generated in the spreadsheet LSTMRegression/sine_data.ods
-      Note that a real LSTM would need more training data.
+      Test the Kolmogorov-Arnold Networks using a sum of a cosine and a cube
+      root.
+      The data was generated in the spreadsheet KAN/kan_data.ods
+      Note that more training data would be better.
     </description>
   </TestInfo>
 
   <RunInfo>
     <WorkingDir>KAN</WorkingDir>
-    <Sequence>load, train_kan</Sequence>
+    <Sequence>load, train_kan, load2, test_kan</Sequence>
     <batchSize>1</batchSize>
   </RunInfo>
 
@@ -51,16 +52,9 @@
 
   <Samplers>
     <CustomSampler name="hs_sample">
-      <Source class="DataObjects" type="HistorySet">samples</Source>
-      <variable name="a" />
-      <variable name="b" />
-      <variable name="c" />
-      <variable name="d" />
-      <variable name="e" />
-      <variable name="f" />
-      <variable name="prev_sum" />
-      <variable name="prev_square" />
-      <variable name="prev_square_sum" />
+      <Source class="DataObjects" type="PointSet">prev_samples</Source>
+      <variable name="x1" />
+      <variable name="x2" />
     </CustomSampler>
   </Samplers>
 
@@ -69,19 +63,19 @@
       <Input class="Files" type="">kan_data</Input>
       <Output class="DataObjects" type="PointSet">samples</Output>
     </IOStep>
-    <!-- <IOStep name="load2">
-      <Input class="Files" type="">sine_data_prev</Input>
-      <Output class="DataObjects" type="HistorySet">prev_samples</Output>
+    <IOStep name="load2">
+      <Input class="Files" type="">kan_data</Input>
+      <Output class="DataObjects" type="PointSet">prev_samples</Output>
     </IOStep> -->
     <RomTrainer name="train_kan">
       <Input class="DataObjects" type="PointSet">samples</Input>
       <Output class="Models" type="ROM">kanrom</Output>
     </RomTrainer>
-    <MultiRun name="test_lstm">
-      <Input class="DataObjects" type="HistorySet">prev_samples</Input>
+    <MultiRun name="test_kan">
+      <Input class="DataObjects" type="PointSet">prev_samples</Input>
       <Model class="Models" type="ROM">kanrom</Model>
       <Sampler class="Samplers" type="CustomSampler">hs_sample</Sampler>
-      <Output class="DataObjects" type="HistorySet">resampled</Output>
+      <Output class="DataObjects" type="PointSet">resampled</Output>
       <Output class="OutStreams" type="Print">out_resampled</Output>
     </MultiRun>
   </Steps>
@@ -91,20 +85,13 @@
       <Input>x1,x2</Input>
       <Output>fx</Output>
     </PointSet>
-    <HistorySet name="resampled">
-      <Input>a,b,c,d,e,f</Input>
-      <Output>sum,square,prev_sum,prev_square,prev_square_sum</Output>
-      <options>
-        <pivotParameter>index</pivotParameter>
-      </options>
-    </HistorySet>
-    <HistorySet name="prev_samples">
-      <Input>a,b,c,d,e,f</Input>
-      <Output>prev_sum,prev_square,prev_square_sum</Output>
-      <options>
-        <pivotParameter>index</pivotParameter>
-      </options>
-    </HistorySet>
+    <PointSet name="prev_samples">
+      <Input>x1,x2</Input>
+    </PointSet>
+    <PointSet name="resampled">
+      <Input>x1, x2</Input>
+      <Output>fx</Output>
+    </PointSet>
   </DataObjects>
 
   <OutStreams>
