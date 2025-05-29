@@ -106,8 +106,10 @@ class KAN(SupervisedLearning):
     tensorFeatureVals = torch.tensor(featureVals) #XXX to(model.device)
     prediction = {}
     outcome = self.model.forward(tensorFeatureVals)
-    #XXX handle multiple targets
-    prediction[self.target[0]] = outcome.detach().numpy()
+    npOutcome = outcome.detach().numpy()
+    #handle multiple targets
+    for i, name in enumerate(self.target):
+      prediction[name] = npOutcome[0,i]
     return prediction
 
   def __resetLocal__(self):
