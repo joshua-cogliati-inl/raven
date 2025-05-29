@@ -104,7 +104,7 @@ class KAN(SupervisedLearning):
       @ In, featureVals, numpy.array, 2-D for static case and 3D for time-dependent case, values of features
       @ Out, prediction, dict, predicted values
     """
-    tensorFeatureVals = torch.tensor(featureVals) #XXX to(model.device)
+    tensorFeatureVals = torch.tensor(featureVals).to(self._device)
     prediction = {}
     outcome = self.model.forward(tensorFeatureVals)
     npOutcome = outcome.detach().numpy()
@@ -159,11 +159,11 @@ class KAN(SupervisedLearning):
                                                test_size=0.25,
                                                random_state=self.seed)
 
-    #XXX do we need to move this to a device?
-    dataset = {'train_input': torch.from_numpy(trainFeatures),
-               'train_label': torch.from_numpy(trainLabels),
-               'test_input': torch.from_numpy(testFeatures),
-               'test_label': torch.from_numpy(testLabels)}
+    #convert data to torch and move this to a device
+    dataset = {'train_input': torch.from_numpy(trainFeatures).to(self._device),
+               'train_label': torch.from_numpy(trainLabels).to(self._device),
+               'test_input': torch.from_numpy(testFeatures).to(self._device),
+               'test_label': torch.from_numpy(testLabels).to(self._device)}
     for step in self.steps:
       if type(step) == int:
         self.model.fit(dataset, steps=step)
