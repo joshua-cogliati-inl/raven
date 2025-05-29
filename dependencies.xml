@@ -92,7 +92,7 @@ Note all install methods after "main" take
     <pydmd source="pip"/>
     <!-- the next few are for pykan -->
     <pykan source="pip"/>
-    <torch source="pip"/>
+    <pytorch skip_check='True'/>
     <!-- end pykan dependencies -->
   </main>
   <alternate name="pip">
