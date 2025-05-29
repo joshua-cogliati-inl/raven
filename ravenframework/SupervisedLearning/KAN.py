@@ -20,6 +20,7 @@
 #External Modules------------------------------------------------------------------------------------
 import kan
 import torch
+import sklearn.model_selection
 #External Modules End--------------------------------------------------------------------------------
 
 
@@ -147,17 +148,22 @@ class KAN(SupervisedLearning):
     """
     fullLayers = [featureVals.shape[1]]+self.layers+[targetVals.shape[1]]
     kan.torch.set_default_dtype(kan.torch.float64)
-    device = kan.torch.device('cuda' if kan.torch.cuda.is_available() else 'cpu\
+    self._device = kan.torch.device('cuda' if kan.torch.cuda.is_available() else 'cpu\
 ')
-    args = {'device': device}
+    args = {'device': self._device}
     if self.seed is not None:
       args['seed'] = self.seed
     self.model = kan.KAN(width=fullLayers, **args)
+    trainFeatures, testFeatures, trainLabels, testLabels = \
+      sklearn.model_selection.train_test_split(featureVals, targetVals,
+                                               test_size=0.25,
+                                               random_state=self.seed)
+
     #XXX do we need to move this to a device?
-    dataset = {'train_input': torch.from_numpy(featureVals), 'train_label': torch.from_numpy(targetVals)}
-    #XXX need to split the data into a test and train set
-    dataset['test_input'] = dataset['train_input']
-    dataset['test_label'] = dataset['train_label']
+    dataset = {'train_input': torch.from_numpy(trainFeatures),
+               'train_label': torch.from_numpy(trainLabels),
+               'test_input': torch.from_numpy(testFeatures),
+               'test_label': torch.from_numpy(testLabels)}
     for step in self.steps:
       if type(step) == int:
         self.model.fit(dataset, steps=step)
