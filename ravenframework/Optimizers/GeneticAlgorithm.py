@@ -983,7 +983,9 @@ class GeneticAlgorithm(RavenSampled):
       self.raiseADebug("### rlz.sizes['RAVEN_sample_ID'] = {}".format(rlz.sizes['RAVEN_sample_ID']))
       for i in range(rlz.sizes['RAVEN_sample_ID']):
         if self._isMultiObjective:
-          rlzDict = self.population.isel(chromosome=i).to_series().to_dict()
+          varList = self._solutionExport.getVars('input') + self._solutionExport.getVars('output') + list(self.toBeSampled.keys())
+          rlzDict = dict((var,np.atleast_1d(rlz[var].data)[i]) for var in set(varList) if var in rlz.data_vars)
+          rlzDict.update(self.population.isel(chromosome=i).to_series().to_dict())
           for j in range(len(self._objectiveVar)):
              rlzDict[self._objectiveVar[j]] = self.objectiveVal[j][i]
           rlzDict['batchId'] = self.batchId
