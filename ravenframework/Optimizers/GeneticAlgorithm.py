@@ -1022,6 +1022,9 @@ class GeneticAlgorithm(RavenSampled):
         for ind, fitName in enumerate(list(self.multiBestFitness.keys())):
             bestRlz['FitnessEvaluation_'+ fitName] = self.multiBestFitness[fitName].data
         bestRlz.update(self.multiBestPoint)
+        for var in rlz:
+          if var not in bestRlz:
+            bestRlz[var] = rlz[var]
       else:
         bestRlz[self._objectiveVar[0]] = self.multiBestObjective[0]
         bestRlz['fitness'] = self.bestFitness
