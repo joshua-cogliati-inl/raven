@@ -142,16 +142,6 @@ def crowdingDistance(rank, popSize, fitness):
       crowdDist[sortedFront[0]] = np.inf
       crowdDist[sortedFront[-1]] = np.inf
 
-      # Ensure all repeated boundary points are set to infinity
-      boundaryValueMin = fitness[sortedFront[0], obj]
-      boundaryValueMax = fitness[sortedFront[-1], obj]
-
-      for i in range(1, numPoints - 1):
-        if fitness[sortedFront[i], obj] == boundaryValueMin:
-          crowdDist[sortedFront[i]] = np.inf
-        if fitness[sortedFront[i], obj] == boundaryValueMax:
-          crowdDist[sortedFront[i]] = np.inf
-
       # Skip normalization if all values are identical
       fMax = fitness[sortedFront, obj].max()
       fMin = fitness[sortedFront, obj].min()
