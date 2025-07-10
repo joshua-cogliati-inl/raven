@@ -844,7 +844,7 @@ class GeneticAlgorithm(RavenSampled):
           self.objectiveVal = []
           for i in range(len(self._objectiveVar)):
             self.objectiveVal.append(list(np.atleast_1d(rlz[self._objectiveVar[i]].data)))
-        self._collectOptPointMulti(self.population,
+        self._collectOptPointMulti(rlz, self.population,
                                    self.rank,
                                    self.crowdingDistance,
                                    self.objectiveVal,
@@ -1022,9 +1022,6 @@ class GeneticAlgorithm(RavenSampled):
         for ind, fitName in enumerate(list(self.multiBestFitness.keys())):
             bestRlz['FitnessEvaluation_'+ fitName] = self.multiBestFitness[fitName].data
         bestRlz.update(self.multiBestPoint)
-        for var in rlz:
-          if var not in bestRlz:
-            bestRlz[var] = rlz[var]
       else:
         bestRlz[self._objectiveVar[0]] = self.multiBestObjective[0]
         bestRlz['fitness'] = self.bestFitness
@@ -1058,7 +1055,7 @@ class GeneticAlgorithm(RavenSampled):
 
     return point
 
-  def _collectOptPointMulti(self, population, rank, CD, objVal, fitness, constraintsV):
+  def _collectOptPointMulti(self, rlz, population, rank, CD, objVal, fitness, constraintsV):
     """
       Collects the point (dict) from a realization
       @ In, population, Dataset, container containing the population
@@ -1069,6 +1066,10 @@ class GeneticAlgorithm(RavenSampled):
       @ In, constraintsV, xr.DataArray, calculated contraints value
       @ Out, point, dict, point used in this realization
     """
+    varList = list(self.toBeSampled.keys()) + self._solutionExport.getVars('input') + self._solutionExport.getVars('output')
+    varList = set(varList)
+    selVars = [var for var in varList if var in rlz.data_vars]
+
     rankOneIDX = np.where(rank.data == 1)[0].tolist()
     optPoints = population[rankOneIDX]
     optObjVal = np.array(objVal)[:,rankOneIDX].T
@@ -1084,7 +1085,7 @@ class GeneticAlgorithm(RavenSampled):
     optRank = rank.data[rankOneIDX]
     optCD = CD.data[rankOneIDX]
 
-    optPointsDic = dict((var,np.array(optPoints)[:,i]) for i, var in enumerate(population.Gene.data))
+    optPointsDic = dict((var,rlz.isel({'RAVEN_sample_ID': rankOneIDX})[var].data) for var in selVars)
     optConstNew = [list(y) for y in zip(*optConstraintsV)]
     if len(optConstNew) > 0:
       optConstNew = xr.DataArray(optConstNew,
