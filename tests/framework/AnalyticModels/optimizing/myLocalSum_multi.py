@@ -43,3 +43,5 @@ def run(self,Inputs):
     @ Out, None
   """
   self.obj1,self.obj2,self.obj3 = evaluate(Inputs)
+  #XXX Do not merge the below change
+  self.obj1 = self.obj2
