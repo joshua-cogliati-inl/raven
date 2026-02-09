@@ -248,14 +248,14 @@ class Simulation(MessageUser):
       @ Out, base, ElementTree.Element, the root element of the schema.
     """
     inputSpecification = cls.getInputSpecification()
-    #the things needed for a XSD schema
+    # the things needed for a XSD schema
     base = ET.Element("xsd:schema")
     base.set("version","1.0")
     base.set("xmlns:xsd","http://www.w3.org/2001/XMLSchema")
-    #Creat the simulation element
+    # Create the simulation element
     simElement = ET.SubElement(base, "xsd:element")
     simElement.set("name", "Simulation")
-    simElement.set("type", "Simulation_type")
+    simElement.set("type", inputSpecification.__name__ + "_type")
     inputSpecification.generateXSD(base,{})
     return base
 
@@ -349,6 +349,9 @@ class Simulation(MessageUser):
 
     # Dictionary of mode handlers
     self.__modeHandlerDict = CustomModes.modeHandlers
+
+    # copy entity modules for instance-level customization without mutating the class map
+    self.entityModules = dict(self.entityModules)
 
     # Mapping between an entity type and the dictionary containing the instances for the simulation
     self.entities = {}
