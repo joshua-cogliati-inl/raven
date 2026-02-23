@@ -30,13 +30,14 @@ except ModuleNotFoundError:
   sys.path.append(os.path.dirname(os.path.dirname(__file__)))
   import ravenframework
 
+if len(sys.argv) != 2:
+  print("Invalid parameters")
+  print(sys.argv[0], "generated_filename.xsd")
+  sys.exit(1)
+
 builtins.profile = lambda f: f
 from ravenframework.utils import InputData
 import ravenframework.Simulation
-
-if len(sys.argv) != 2:
-  print(sys.argv[0], "generated_filename.xsd")
-  sys.exit(1)
 
 if os.environ.get("RAVEN_SUPPRESS_INPUT_SPEC_WARNINGS", "").lower() in ("1", "true", "yes"):
   InputData.SUPPRESS_INPUT_SPEC_WARNINGS = True
